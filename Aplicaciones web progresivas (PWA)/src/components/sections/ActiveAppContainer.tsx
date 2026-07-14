@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, X, ExternalLink, Terminal, Cpu, HardDrive, Square, Activity } from 'lucide-react';
+import { Globe, X, ExternalLink, Terminal, Cpu, HardDrive, Square, Activity, Shield, ShieldOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ChatOllama from './ChatOllama';
 
@@ -13,6 +13,7 @@ export default function ActiveAppContainer({ app, onExit, visible }: ActiveAppCo
   const { t } = useTranslation();
   const [urlNavegador, setUrlNavegador] = useState("");
   const [valorEntrada, setValorEntrada] = useState("");
+  const [usarProxy, setUsarProxy] = useState(false);
 
   const resolverDestino = (entrada: string) => {
     const texto = entrada.trim();
