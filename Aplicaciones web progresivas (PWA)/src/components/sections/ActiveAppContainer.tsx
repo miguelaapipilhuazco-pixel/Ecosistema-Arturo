@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, X, ExternalLink, Terminal, Cpu, HardDrive, Square, Activity, Shield, ShieldOff } from 'lucide-react';
+import { Globe, X, ExternalLink, Terminal, Cpu, HardDrive, Square, Activity, Shield, ShieldOff, RotateCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ChatOllama from './ChatOllama';
 
@@ -14,6 +14,17 @@ export default function ActiveAppContainer({ app, onExit, visible }: ActiveAppCo
   const [urlNavegador, setUrlNavegador] = useState("");
   const [valorEntrada, setValorEntrada] = useState("");
   const [usarProxy, setUsarProxy] = useState(false);
+  const [esVertical, setEsVertical] = useState(false);
+  const [ignorarGiro, setIgnorarGiro] = useState(false);
+
+  useEffect(() => {
+    const verificarOrientacion = () => {
+      setEsVertical(window.innerHeight > window.innerWidth && window.innerWidth < 1024);
+    };
+    verificarOrientacion();
+    window.addEventListener('resize', verificarOrientacion);
+    return () => window.removeEventListener('resize', verificarOrientacion);
+  }, []);
 
   const resolverDestino = (entrada: string) => {
     const texto = entrada.trim();
@@ -226,7 +237,24 @@ function ConsoleMonitor({ app, onExit }: { app: any; onExit: () => void }) {
             ))}
           </div>
         </div>
-      </div>
+        {esVertical && !ignorarGiro && app.os && (app.os.includes('windows') || app.os.includes('linux')) && (
+          <div className="absolute inset-0 bg-background/95 backdrop-blur-md z-[99999] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
+            <div className="p-4 rounded-full bg-primary/10 border border-primary/20 mb-4 animate-bounce">
+              <RotateCw className="w-10 h-10 text-primary animate-spin" style={{ animationDuration: '6s' }} />
+            </div>
+            <h3 className="font-display text-xs uppercase tracking-widest text-foreground mb-2">Modo PC Detectado</h3>
+            <p className="font-mono text-[9px] text-muted-foreground max-w-xs mb-6 uppercase tracking-wider leading-relaxed">
+              Para una mejor experiencia y control, por favor gira tu celular a posición horizontal.
+            </p>
+            <button
+              onClick={() => setIgnorarGiro(true)}
+              className="px-4 py-2 rounded-xl border border-border bg-card text-[9px] font-bold uppercase tracking-wider text-muted-foreground hover:border-primary/50 hover:text-primary transition-all"
+            >
+              Continuar en Vertical
+            </button>
+          </div>
+        )}
+     </div>
     </div>
   );
 }
