@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Proyecto Feria de Ciencias
+Name[es]=Proyecto Feria de Ciencias
+Comment=Panel de control del ecosistema científico
+Comment[es]=Panel de control del ecosistema científico
+Exec=bash -c "cd \"$HOME/Downloads/Ecosistema Arturo/Linux\" && bash iniciar-proyecto.sh"
+Icon=/home/%u/Downloads/Ecosistema Arturo/Aplicaciones web progresivas (PWA)/public/icon-512.png
+Terminal=false
+Categories=Education;Science;Utility;
+Keywords=feria;ciencias;proyecto;ecosistema;
+StartupWMClass=Google-chrome
+StartupNotify=true

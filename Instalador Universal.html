@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecosistema Arturo — Portal de Instalación Inteligente</title>
+  <style>
+    :root {
+      --bg: #030303;
+      --card: #09090b;
+      --card-hover: #121214;
+      --border: #1f1f23;
+      --primary: #d4af37; /* Dorado Ecosistema */
+      --secondary: #8b5cf6; /* Violeta */
+      --fg: #f4f4f5;
+      --muted: #a1a1aa;
+      --glow: rgba(212, 175, 55, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 40%);
+      color: var(--fg);
+      font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      text-align: center;
+      animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .logo-container {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .logo-glow {
+      position: absolute;
+      inset: -8px;
+      background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+      opacity: 0.4;
+      filter: blur(12px);
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    .logo {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--card) 0%, #1c1917 100%);
+      border: 2px solid var(--primary);
+      border-radius: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      color: var(--primary);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+      background: linear-gradient(to right, var(--fg), #e4e4e7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      font-family: monospace;
+      margin-bottom: 2.5rem;
+      opacity: 0.8;
+    }
+
+    /* Layout de doble columna */
+    .grid-layout {
+      display: grid;
+      grid-template-cols: 1fr;
+      gap: 1.5rem;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    @media (min-width: 768px) {
+      .grid-layout {
+        grid-template-cols: 1fr 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1.5rem;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+    }
+
+    .detection-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(212, 175, 55, 0.06);
+      border: 1px solid rgba(212, 175, 55, 0.15);
+      color: var(--primary);
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-family: monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .detect-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .os-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 2rem;
+    }
+
+    .btn-install {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, var(--primary) 0%, #b8901a 100%);
+      color: black;
+      border: none;
+      padding: 1.2rem 2.5rem;
+      border-radius: 1rem;
+      font-size: 0.9rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 20px var(--glow);
+      width: 100%;
+    }
+
+    .btn-install:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+    }
+
+    /* Estilo del panel QR */
+    .qr-container {
+      background: white;
+      padding: 1rem;
+      border-radius: 1.2rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 180px;
+      height: 180px;
+    }
+
+    .qr-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .qr-info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      color: #a78bfa;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-family: monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      margin-top: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    .ip-input-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #18181b;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.4rem 0.8rem;
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 250px;
+    }
+
+    .ip-input-group label {
+      font-size: 0.7rem;
+      font-family: monospace;
+      color: var(--muted);
+    }
+
+    .ip-input-group input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--primary);
+      font-family: monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-1: 1;
+      width: 100%;
+      text-align: center;
+    }
+
+    .manual-title {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin: 2rem 0 1rem;
+    }
+
+    .manual-grid {
+      display: grid;
+      grid-template-cols: repeat(2, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    @media (min-width: 480px) {
+      .manual-grid {
+        grid-template-cols: repeat(6, 1fr);
+      }
+    }
+
+    .manual-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 0.8rem;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      color: var(--fg);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.3s ease;
+    }
+
+    .manual-item:hover {
+      border-color: var(--primary);
+      background: var(--card-hover);
+      color: var(--primary);
+    }
+
+    .manual-item svg {
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+    }
+
+    .manual-item:hover svg {
+      opacity: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.03); opacity: 0.55; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="logo-container">
+      <div class="logo-glow"></div>
+      <div class="logo">A</div>
+    </div>
+
+    <h1>Ecosistema Arturo</h1>
+    <div class="subtitle">Instalador Universal Inteligente</div>
+
+    <div class="grid-layout">
+      <!-- Columna Izquierda: Autodetección y Detalles Técnicos -->
+      <div class="card">
+        <div class="detection-badge">
+          <span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%; margin-right:4px;"></span>
+          Detector Inteligente Activo
+        </div>
+        
+        <div class="detect-label">Sistema Operativo</div>
+        <div class="os-title" id="os-name" style="margin-bottom: 0.8rem; font-size: 1.6rem;">Detectando...</div>
+
+        <!-- Especificaciones técnicas detalladas del hardware/software -->
+        <div style="text-align: left; width: 100%; margin: 1rem 0 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem 1.2rem; border-radius: 1rem; font-size: 0.75rem; line-height: 1.6;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.4rem; margin-bottom: 0.4rem;">
+            <span style="color: var(--muted);">Clase de Equipo:</span>
+            <strong id="device-type" style="color: var(--fg);">Cargando...</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.4rem; margin-bottom: 0.4rem;">
+            <span style="color: var(--muted);">S.O. Detallado:</span>
+            <strong id="device-os" style="color: var(--primary);">Cargando...</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.4rem; margin-bottom: 0.4rem;">
+            <span style="color: var(--muted);">Marca / Modelo:</span>
+            <strong id="device-model" style="color: var(--fg); max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Cargando...</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--muted);">Navegador:</span>
+            <strong id="device-browser" style="color: #a78bfa;">Cargando...</strong>
+          </div>
+        </div>
+
+        <a href="#" class="btn-install" id="btn-action">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Ejecutar Instalador
+        </a>
+      </div>
+
+      <!-- Columna Derecha: Código QR Permanente -->
+      <div class="card">
+        <div class="detection-badge" style="background:rgba(139, 92, 246,0.06); border-color:rgba(139, 92, 246,0.15); color:#a78bfa;">
+          Código QR Permanente
+        </div>
+        
+        <div class="qr-container">
+          <canvas id="qr-canvas"></canvas>
+        </div>
+
+        <div class="detect-label">Escanear para instalar en Celular o VR</div>
+        
+        <div class="ip-input-group" id="ip-config-container">
+          <label>IP servidor:</label>
+          <input type="text" id="ip-input" value="192.168.1.69" placeholder="Ingresa la IP de la PC">
+        </div>
+        
+        <div class="qr-info-badge" id="qr-address-label">
+          http://192.168.1.69:3000/Android/ecosistema-arturo.apk
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Instrucciones de Archivo Local Detectado -->
+  <div id="local-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; animation: fadeIn 0.3s ease;">
+    <div style="background: var(--card); border: 1.5px solid var(--primary); border-radius: 1.5rem; padding: 2rem; max-width: 480px; width: 100%; box-shadow: 0 25px 50px rgba(0,0,0,0.8); text-align: left; position: relative; font-family: sans-serif;">
+      <div style="color: var(--primary); font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; letter-spacing: 0.05em; text-transform: uppercase;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Ejecución Local
+      </div>
+      <p style="color: var(--fg); font-size: 0.85rem; line-height: 1.5; margin-bottom: 1.2rem;">
+        Estás abriendo el portal desde tu explorador de archivos local (<code style="color:#a78bfa; background:rgba(255,255,255,0.05); padding:2px 4px; border-radius:4px; font-family:monospace;">file:///</code>). Por seguridad, los navegadores impiden descargar y ejecutar scripts automáticos desde aquí.
+      </p>
+      <div style="background: rgba(212,175,55,0.05); border-left: 3px solid var(--primary); padding: 1rem; border-radius: 0 0.75rem 0.75rem 0; margin-bottom: 1.5rem; font-size: 0.8rem; line-height: 1.6; color: #f4f4f5;">
+        <strong style="display:block; margin-bottom: 0.4rem; color: var(--primary);">Para instalar en esta computadora:</strong>
+        <ol style="margin-left: 1.2rem; display: flex; flex-direction: column; gap: 0.3rem;">
+          <li>Abre tu explorador de archivos en la carpeta de este proyecto.</li>
+          <li>Entra a la carpeta llamada <strong style="color: var(--primary);">Windows</strong>.</li>
+          <li>Haz doble clic sobre el archivo <strong style="color: var(--primary);">Instalar Ecosistema Arturo.bat</strong>.</li>
+        </ol>
+      </div>
+      <p style="color: var(--muted); font-size: 0.75rem; line-height: 1.4; margin-bottom: 1.5rem;">
+        Si deseas instalarlo en un celular o casco VR, usa el Código QR permanente que se encuentra en la pantalla trasera.
+      </p>
+      <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+        <button onclick="document.getElementById('local-modal').style.display='none'" style="background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+          Entendido, Cerrar
+        </button>
+        <button onclick="document.getElementById('local-modal').style.display='none'; window.open('Windows/Instalar Ecosistema Arturo.bat', '_blank')" style="background: linear-gradient(135deg, var(--primary) 0%, #b8901a 100%); border: none; color: black; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+          Ver Código del Script
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Generador ligero de codigos QR integrado
+    // Implementacion simplificada en JS para no requerir dependencias de red
+    function generateQRCode(text) {
+      const canvas = document.getElementById('qr-canvas');
+      const apiSrc = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(text)}&bgcolor=ffffff&color=000000&margin=10`;
+      
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = apiSrc;
+    }
+
+    function updateQR() {
+      const ipInput = document.getElementById('ip-input');
+      const addressLabel = document.getElementById('qr-address-label');
+      
+      const ip = ipInput.value.trim();
+      const targetUrl = `http://${ip}:3000/Android/ecosistema-arturo.apk`;
+      
+      addressLabel.innerText = targetUrl;
+      generateQRCode(targetUrl);
+    }
+
+    function getDetailedDeviceInfo() {
+      const ua = navigator.userAgent;
+      const uaLower = ua.toLowerCase();
+      const platform = navigator.platform.toLowerCase();
+      
+      let os = "Desconocido";
+      let type = "Computadora / Dispositivo";
+      let brandModel = "Genérico";
+      let browser = "Navegador Web";
+
+      // 1. Detectar Navegador
+      if (uaLower.includes("firefox/")) browser = "Firefox";
+      else if (uaLower.includes("edg/")) browser = "Microsoft Edge";
+      else if (uaLower.includes("chrome/")) {
+        if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
+          browser = "Brave Browser";
+        } else {
+          browser = "Google Chrome";
+        }
+      } else if (uaLower.includes("safari/") && !uaLower.includes("chrome/")) {
+        browser = "Apple Safari";
+      }
+
+      // 2. Detectar OS, Clase y Modelo
+      if (uaLower.includes("windows nt")) {
+        type = "Computadora Personal (PC / Laptop)";
+        let winVer = "Windows";
+        if (uaLower.includes("windows nt 10.0")) winVer = "Windows 10 / 11";
+        else if (uaLower.includes("windows nt 6.3")) winVer = "Windows 8.1";
+        else if (uaLower.includes("windows nt 6.1")) winVer = "Windows 7";
+        
+        let arch = uaLower.includes("win64") || uaLower.includes("x64") ? "64-bit" : "32-bit";
+        os = `${winVer} (${arch})`;
+        brandModel = "PC compatible (Intel/AMD)";
+      } else if (uaLower.includes("android")) {
+        type = "Dispositivo Móvil (Smartphone)";
+        let androidMatch = ua.match(/Android\s+([0-9\.]+)/i);
+        os = androidMatch ? "Android " + androidMatch[1] : "Android OS";
+
+        // Parsear marca/modelo del parentesis
+        let parts = ua.match(/\(([^)]+)\)/);
+        if (parts && parts[1]) {
+          let subParts = parts[1].split(';');
+          for (let part of subParts) {
+            part = part.trim();
+            if (!part.startsWith("Linux") && !part.startsWith("Android") && part !== "wv" && !part.startsWith("U;")) {
+              brandModel = part;
+              break;
+            }
+          }
+        }
+        if (brandModel === "Genérico") brandModel = "Smartphone Android";
+
+        // Renombrar marcas comunes
+        let bLower = brandModel.toLowerCase();
+        if (bLower.includes("sm-") || bLower.includes("samsung")) brandModel = "Samsung (" + brandModel + ")";
+        else if (bLower.includes("redmi") || bLower.includes("poco") || bLower.includes("mi ") || bLower.includes("xiaomi")) brandModel = "Xiaomi / Redmi (" + brandModel + ")";
+        else if (bLower.includes("moto") || bLower.includes("motorola")) brandModel = "Motorola (" + brandModel + ")";
+        else if (bLower.includes("pixel")) brandModel = "Google Pixel (" + brandModel + ")";
+        else if (bLower.includes("huawei")) brandModel = "Huawei (" + brandModel + ")";
+      } else if (uaLower.includes("iphone") || uaLower.includes("ipad")) {
+        type = uaLower.includes("iphone") ? "Apple iPhone" : "Apple iPad";
+        os = uaLower.includes("iphone") ? "iOS" : "iPadOS";
+        let verMatch = ua.match(/OS\s+([0-9_]+)/i);
+        if (verMatch) os += " " + verMatch[1].replace(/_/g, ".");
+        brandModel = type;
+      } else if (uaLower.includes("macintosh")) {
+        type = "Computadora Apple Mac";
+        os = "macOS";
+        let verMatch = ua.match(/Mac OS X\s+([0-9_]+)/i);
+        if (verMatch) os += " " + verMatch[1].replace(/_/g, ".");
+        brandModel = "Apple Mac (Intel/Apple Silicon)";
+      } else if (uaLower.includes("linux")) {
+        type = "Computadora Personal (Linux)";
+        os = "GNU/Linux";
+        brandModel = "PC Genérico (Linux)";
+      }
+
+      // Quest VR
+      if (uaLower.includes("quest") || uaLower.includes("oculus") || uaLower.includes("pacific")) {
+        type = "Visor Realidad Virtual (VR/MR)";
+        os = "Oculus OS";
+        if (uaLower.includes("quest 3")) brandModel = "Meta Quest 3";
+        else if (uaLower.includes("quest 2")) brandModel = "Meta Quest 2";
+        else brandModel = "Meta Quest";
+      }
+
+      return { os, type, brandModel, browser };
+    }
+
+    function detectDevice() {
+      const ua = navigator.userAgent.toLowerCase();
+      const platform = navigator.platform.toLowerCase();
+      
+      const osName = document.getElementById('os-name');
+      const btnAction = document.getElementById('btn-action');
+
+      const info = getDetailedDeviceInfo();
+
+      // Rellenar la tabla de especificaciones técnicas detalladas
+      document.getElementById('device-type').innerText = info.type;
+      document.getElementById('device-os').innerText = info.os;
+      document.getElementById('device-model').innerText = info.brandModel;
+      document.getElementById('device-browser').innerText = info.browser;
+
+      // Autoconfiguracion de IP
+      if (window.location.protocol.startsWith('http')) {
+        const currentHost = window.location.hostname;
+        document.getElementById('ip-input').value = currentHost;
+      }
+
+      // Meta Quest / VR
+      if (ua.includes('quest') || ua.includes('oculus') || ua.includes('pacific')) {
+        osName.innerHTML = "Meta Quest (VR/MR)";
+        btnAction.href = "VR_MR/ecosistema-arturo.apk";
+        btnAction.setAttribute('download', 'ecosistema-arturo.apk');
+        btnAction.innerHTML = "Instalar APK de VR";
+        return;
+      }
+
+      // Android
+      if (ua.includes('android')) {
+        osName.innerHTML = "Dispositivo Android";
+        btnAction.href = "Android/ecosistema-arturo.apk";
+        btnAction.setAttribute('download', 'ecosistema-arturo.apk');
+        btnAction.innerHTML = "Instalar APK Android";
+        return;
+      }
+
+      // iOS
+      if (ua.includes('iphone') || ua.includes('ipad') || ua.includes('ipod')) {
+        osName.innerHTML = "Apple iOS";
+        btnAction.href = "iOS/ecosistema-arturo.apk";
+        btnAction.setAttribute('download', 'ecosistema-arturo.apk');
+        btnAction.innerHTML = "Descargar APK iOS";
+        return;
+      }
+
+      // Windows
+      if (ua.includes('win') || platform.includes('win')) {
+        osName.innerHTML = "Microsoft Windows";
+        btnAction.href = "Windows/Instalar Ecosistema Arturo.bat";
+        btnAction.setAttribute('download', 'Instalar Ecosistema Arturo.bat');
+        btnAction.innerHTML = "Ejecutar Instalador (.bat)";
+        
+        // Asignar comportamiento de modal cuando se ejecuta desde un archivo local file:///
+        btnAction.onclick = function(e) {
+          if (window.location.protocol === 'file:') {
+            e.preventDefault();
+            document.getElementById('local-modal').style.display = 'flex';
+            return false;
+          }
+        };
+        return;
+      }
+
+      // macOS
+      if (ua.includes('mac') || platform.includes('mac')) {
+        osName.innerHTML = "Apple macOS";
+        btnAction.href = "macOS/Ecosistema Arturo macOS.zip";
+        btnAction.setAttribute('download', 'Ecosistema Arturo macOS.zip');
+        btnAction.innerHTML = "Descargar para Mac (.zip)";
+        return;
+      }
+
+      // Linux
+      if (ua.includes('linux') || platform.includes('linux')) {
+        osName.innerHTML = "Sistema Linux";
+        btnAction.href = "Linux/instalar-ecosistema.sh";
+        btnAction.setAttribute('download', 'instalar-ecosistema.sh');
+        btnAction.innerHTML = "Ejecutar Instalador (.sh)";
+        
+        // Asignar comportamiento de modal para Linux local
+        btnAction.onclick = function(e) {
+          if (window.location.protocol === 'file:') {
+            e.preventDefault();
+            const modal = document.getElementById('local-modal');
+            // Cambiar textos del modal temporalmente para reflejar Linux
+            modal.querySelector('strong').innerText = "Para instalar en esta computadora:";
+            modal.querySelector('ol').innerHTML = `
+              <li>Abre tu terminal en la carpeta de este proyecto.</li>
+              <li>Entra a la carpeta llamada <strong style="color: var(--primary);">Linux</strong>.</li>
+              <li>Dale permisos y ejecuta: <code style="color:#a78bfa; background:rgba(255,255,255,0.05); padding:2px 4px; border-radius:4px; font-family:monospace;">chmod +x instalar-ecosistema.sh && ./instalar-ecosistema.sh</code></li>
+            `;
+            modal.querySelector('button[onclick*="window.open"]').setAttribute('onclick', "document.getElementById('local-modal').style.display='none'; window.open('Linux/instalar-ecosistema.sh', '_blank')");
+            modal.style.display = 'flex';
+            return false;
+          }
+        };
+        return;
+      }
+
+      osName.innerHTML = "Dispositivo Genérico";
+      btnAction.href = "Android/ecosistema-arturo.apk";
+      btnAction.setAttribute('download', 'ecosistema-arturo.apk');
+      btnAction.innerHTML = "Descargar APK";
+    }
+
+    window.onload = function() {
+      detectDevice();
+      updateQR();
+      
+      // Listener de cambio de IP
+      document.getElementById('ip-input').addEventListener('input', updateQR);
+    };
+  </script>
+</body>
+</html>

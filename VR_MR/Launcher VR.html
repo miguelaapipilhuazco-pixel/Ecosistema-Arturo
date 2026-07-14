@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modo VR — Proyecto Feria de Ciencias</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #04040a;
+      --primary: #a855f7;
+      --secondary: #06b6d4;
+      --fg: #fafafa;
+      --muted: #71717a;
+    }
+    body {
+      background: radial-gradient(ellipse at center, #0f0a1e 0%, var(--bg) 70%);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated background particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: float linear infinite;
+      opacity: 0;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 0.3; }
+      100% { transform: translateY(-20px) scale(1); opacity: 0; }
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+    .logo-ring {
+      position: relative;
+      width: 160px;
+      height: 160px;
+    }
+    .logo-ring::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, var(--primary), var(--secondary), var(--primary));
+      animation: spin 3s linear infinite;
+      opacity: 0.6;
+    }
+    .logo-ring::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: var(--bg);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .logo-img {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 50%;
+      filter: drop-shadow(0 0 30px rgba(168,85,247,0.6));
+    }
+    h1 {
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: 800;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #fff 30%, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      font-family: monospace;
+    }
+
+    .status-badge {
+      background: rgba(168,85,247,0.1);
+      border: 1px solid rgba(168,85,247,0.3);
+      border-radius: 2rem;
+      padding: 0.4rem 1.2rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--primary);
+      font-family: monospace;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 320px;
+    }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      border-radius: 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .btn-vr {
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      color: white;
+      box-shadow: 0 8px 32px rgba(168,85,247,0.4);
+    }
+    .btn-vr:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(168,85,247,0.6); }
+    .btn-vr:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-2d {
+      background: rgba(255,255,255,0.05);
+      color: var(--fg);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .btn-2d:hover { background: rgba(255,255,255,0.1); }
+    .btn-2d:is(a) { display: flex; }
+
+    #xr-status {
+      font-size: 0.65rem;
+      color: var(--muted);
+      font-family: monospace;
+      letter-spacing: 0.1em;
+      text-align: center;
+      min-height: 1.2em;
+    }
+
+    .separator {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+    }
+    .separator::before, .separator::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+    }
+    .separator span { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.3em; }
+
+    canvas { display: none; }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+
+  <div class="content">
+
+    <h1>Proyecto Feria de Ciencias</h1>
+    <p class="subtitle">Ecosistema Arturo · VR / MR</p>
+
+    <div class="status-badge" id="xr-badge">Verificando soporte WebXR...</div>
+
+    <div class="btn-group">
+      <button class="btn btn-vr" id="btn-vr" onclick="entrarVR()" disabled>
+        🥽 Entrar en modo VR
+      </button>
+
+      <div class="separator"><span>o continúa en 2D</span></div>
+
+      <a class="btn btn-2d" href="http://localhost:3000" id="btn-2d">
+        🖥️ Abrir aplicación
+      </a>
+    </div>
+
+    <div id="xr-status">Inicializando...</div>
+  </div>
+
+  <canvas id="xr-canvas"></canvas>
+
+  <script>
+    // Generate particles
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.animationDuration = (4 + Math.random() * 8) + 's';
+      p.style.animationDelay = (Math.random() * 8) + 's';
+      p.style.width = p.style.height = (1 + Math.random() * 3) + 'px';
+      p.style.background = Math.random() > 0.5 ? '#a855f7' : '#06b6d4';
+      container.appendChild(p);
+    }
+
+    // Check WebXR support
+    const badge = document.getElementById('xr-badge');
+    const btnVR = document.getElementById('btn-vr');
+    const status = document.getElementById('xr-status');
+
+    async function checkWebXR() {
+      if (!navigator.xr) {
+        badge.textContent = 'WebXR no soportado';
+        badge.style.color = '#f97316';
+        badge.style.borderColor = 'rgba(249,115,22,0.3)';
+        status.textContent = 'Tu navegador no soporta WebXR. Usa Meta Quest Browser o Chrome con flags WebXR.';
+        return;
+      }
+      try {
+        const supported = await navigator.xr.isSessionSupported('immersive-vr');
+        if (supported) {
+          badge.textContent = '✓ WebXR Inmersivo Disponible';
+          badge.style.color = '#22c55e';
+          badge.style.borderColor = 'rgba(34,197,94,0.3)';
+          btnVR.disabled = false;
+          status.textContent = 'Haz clic en "Entrar en modo VR" y ponte el visor.';
+        } else {
+          badge.textContent = 'WebXR 2D únicamente';
+          badge.style.color = '#eab308';
+          badge.style.borderColor = 'rgba(234,179,8,0.3)';
+          status.textContent = 'Este dispositivo soporta WebXR pero no el modo inmersivo VR.';
+        }
+      } catch (e) {
+        badge.textContent = 'Error al verificar WebXR';
+        status.textContent = e.message;
+      }
+    }
+
+    checkWebXR();
+
+    // WebXR session
+    let xrSession = null;
+    async function entrarVR() {
+      if (!navigator.xr) return;
+      try {
+        btnVR.textContent = '⏳ Iniciando sesión VR...';
+        btnVR.disabled = true;
+        xrSession = await navigator.xr.requestSession('immersive-vr', {
+          requiredFeatures: ['local-floor'],
+          optionalFeatures: ['bounded-floor', 'hand-tracking']
+        });
+
+        const canvas = document.getElementById('xr-canvas');
+        canvas.style.display = 'block';
+        const gl = canvas.getContext('webgl', { xrCompatible: true });
+        await gl.makeXRCompatible();
+
+        const layer = new XRWebGLLayer(xrSession, gl);
+        xrSession.updateRenderState({ baseLayer: layer });
+
+        xrSession.addEventListener('end', () => {
+          btnVR.textContent = '🥽 Entrar en modo VR';
+          btnVR.disabled = false;
+          canvas.style.display = 'none';
+          status.textContent = 'Sesión VR finalizada.';
+        });
+
+        status.textContent = '🎮 Sesión VR activa.';
+        // Redirigir la app principal al contexto VR
+        window.location.href = 'http://localhost:3000';
+
+      } catch (e) {
+        btnVR.textContent = '🥽 Entrar en modo VR';
+        btnVR.disabled = false;
+        status.textContent = 'Error: ' + e.message;
+      }
+    }
+  </script>
+</body>
+</html>

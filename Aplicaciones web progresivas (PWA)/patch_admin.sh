@@ -1,0 +1,2 @@
+#!/bin/bash
+sed -i 's/className="ecosystem-card p-10 flex flex-col items-start justify-between group hover:border-primary\/50 transition-all bg-card\/20 backdrop-blur-md text-left relative overflow-hidden w-full h-72"/className="ecosystem-card p-4 flex items-center justify-between group hover:border-primary\/50 transition-all bg-card\/40 backdrop-blur-md relative overflow-hidden text-left w-full hover:bg-card\/30"/g' src/components/sections/AdminCenter.tsx

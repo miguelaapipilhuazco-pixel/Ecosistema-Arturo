@@ -1,0 +1,6 @@
+{
+  "name": "Arturo Ecosystem",
+  "description": "Diseño arquitectónico completo, un sistema operativo personal en la nube.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebXR | El unico 100% universal sin instalacion</title>
+    <link rel="icon" type="image/png" href="/webxr-logo.png" />
+    <style>
+      :root {
+        --bg-1: #040404;
+        --bg-2: #111111;
+        --gold-1: #f2d36b;
+        --gold-2: #cba43a;
+        --ink: #f7f7f7;
+        --muted: #cfcfcf;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 20% 10%, rgba(242, 211, 107, 0.24), transparent 35%),
+          radial-gradient(circle at 80% 80%, rgba(203, 164, 58, 0.16), transparent 42%),
+          linear-gradient(140deg, var(--bg-1), var(--bg-2));
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .panel {
+        width: min(820px, 100%);
+        border: 1px solid rgba(242, 211, 107, 0.35);
+        border-radius: 20px;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(8px);
+        padding: 28px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+      }
+
+      .head {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .head img {
+        width: 88px;
+        height: 88px;
+        object-fit: contain;
+        border-radius: 16px;
+        border: 1px solid rgba(242, 211, 107, 0.45);
+        background: #000;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.35rem, 1.6vw + 1rem, 2.2rem);
+        line-height: 1.1;
+      }
+
+      .tagline {
+        margin-top: 6px;
+        color: var(--gold-1);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .primary {
+        background: linear-gradient(135deg, var(--gold-1), var(--gold-2));
+        color: #1f1600;
+      }
+
+      .secondary {
+        background: #1f1f1f;
+        color: #f2f2f2;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+
+      .status {
+        margin-top: 18px;
+        border-radius: 12px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        min-height: 52px;
+        white-space: pre-line;
+      }
+
+      .hint {
+        margin-top: 12px;
+        font-size: 0.95rem;
+      }
+
+      canvas {
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        position: absolute;
+        pointer-events: none;
+      }
+
+      @media (max-width: 600px) {
+        .panel {
+          padding: 20px;
+        }
+
+        .head img {
+          width: 72px;
+          height: 72px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="panel">
+      <section class="head">
+        <div>
+          <h1>WebXR</h1>
+          <div class="tagline">El unico 100% universal sin instalacion</div>
+        </div>
+      </section>
+
+      <p>
+        Esta version de VR_MR esta preparada para correr directo en navegador. Si el dispositivo
+        y el navegador soportan WebXR, puedes iniciar una sesion inmersiva sin instalar una app nativa.
+      </p>
+
+      <div class="actions">
+        <button id="checkBtn" class="secondary">Comprobar compatibilidad</button>
+        <button id="startBtn" class="primary" disabled>Iniciar WebXR (VR)</button>
+        <button id="stopBtn" class="secondary" disabled>Detener sesion</button>
+      </div>
+
+      <div id="status" class="status">Estado: pendiente de comprobacion.</div>
+      <p class="hint">Tip: WebXR requiere contexto seguro (https o localhost).</p>
+      <canvas id="xrCanvas"></canvas>
+    </main>
+
+    <script>
+      const statusEl = document.getElementById("status");
+      const checkBtn = document.getElementById("checkBtn");
+      const startBtn = document.getElementById("startBtn");
+      const stopBtn = document.getElementById("stopBtn");
+      const canvas = document.getElementById("xrCanvas");
+
+      let xrSession = null;
+      let gl = null;
+      let refSpace = null;
+
+      const setStatus = (msg) => {
+        statusEl.textContent = msg;
+      };
+
+      async function checkSupport() {
+        if (!window.isSecureContext) {
+          setStatus("Estado: contexto no seguro. Usa https o localhost para WebXR.");
+          startBtn.disabled = true;
+          return;
+        }
+
+        if (!("xr" in navigator)) {
+          setStatus("Estado: este navegador no expone navigator.xr.");
+          startBtn.disabled = true;
+          return;
+        }
+
+        try {
+          const supportsVR = await navigator.xr.isSessionSupported("immersive-vr");
+          const supportsAR = await navigator.xr.isSessionSupported("immersive-ar");
+
+          setStatus(
+            "Estado de compatibilidad:\n" +
+              "- immersive-vr: " + (supportsVR ? "si" : "no") + "\n" +
+              "- immersive-ar: " + (supportsAR ? "si" : "no")
+          );
+
+          startBtn.disabled = !supportsVR;
+        } catch (err) {
+          setStatus("Estado: no se pudo comprobar WebXR. " + (err && err.message ? err.message : err));
+          startBtn.disabled = true;
+        }
+      }
+
+      function onXRFrame(time, frame) {
+        const session = frame.session;
+        session.requestAnimationFrame(onXRFrame);
+
+        const pose = frame.getViewerPose(refSpace);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
+
+        if (!pose) {
+          gl.clearColor(0.03, 0.03, 0.03, 1.0);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          return;
+        }
+
+        gl.clearColor(0.95, 0.83, 0.42, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      }
+
+      async function startXR() {
+        if (!navigator.xr || xrSession) return;
+
+        try {
+          xrSession = await navigator.xr.requestSession("immersive-vr", {
+            optionalFeatures: ["local-floor", "bounded-floor", "hand-tracking"]
+          });
+
+          gl = canvas.getContext("webgl", { xrCompatible: true, alpha: false });
+          if (!gl) {
+            throw new Error("No se pudo crear contexto WebGL compatible con XR.");
+          }
+
+          await gl.makeXRCompatible();
+          xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
+          refSpace = await xrSession.requestReferenceSpace("local-floor");
+          xrSession.requestAnimationFrame(onXRFrame);
+
+          xrSession.addEventListener("end", () => {
+            xrSession = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            setStatus("Estado: sesion WebXR finalizada.");
+          });
+
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+          setStatus("Estado: sesion WebXR activa.");
+        } catch (err) {
+          xrSession = null;
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+          setStatus("Estado: no se pudo iniciar la sesion. " + (err && err.message ? err.message : err));
+        }
+      }
+
+      async function stopXR() {
+        if (xrSession) {
+          await xrSession.end();
+        }
+      }
+
+      checkBtn.addEventListener("click", checkSupport);
+      startBtn.addEventListener("click", startXR);
+      stopBtn.addEventListener("click", stopXR);
+    </script>
+  </body>
+</html>

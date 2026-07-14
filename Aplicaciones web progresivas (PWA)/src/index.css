@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Jura:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Jura", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Share Tech Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Jura", var(--font-sans);
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-black-accent: var(--black-accent);
+}
+
+@layer base {
+  :root {
+    --background: #f2f2f4;
+    --foreground: #1a1a1c;
+    --card: #fdfdfd;
+    --card-foreground: #1a1a1c;
+    --primary: #121212;
+    --primary-foreground: #ffffff;
+    --muted: #eaeaec;
+    --muted-foreground: #6b6b72;
+    --border: #e0e0e2;
+    --primary-rgb: 18, 18, 18;
+    --primary-shadow: rgba(18, 18, 18, 0.1);
+    --primary-shadow-hover: rgba(18, 18, 18, 0.2);
+    --glow: rgba(0, 0, 0, 0.02);
+    --grid: rgba(0, 0, 0, 0.02);
+    --black-accent: #1e1e20;
+  }
+
+  .dark {
+    --background: #111113;
+    --foreground: #ececed;
+    --card: #18181a;
+    --card-foreground: #ececed;
+    --primary: #f5f5f7;
+    --primary-foreground: #000000;
+    --muted: #1c1c1e;
+    --muted-foreground: #a1a1aa;
+    --border: #242426;
+    --primary-rgb: 245, 245, 247;
+    --primary-shadow: rgba(245, 245, 247, 0.1);
+    --primary-shadow-hover: rgba(245, 245, 247, 0.2);
+    --glow: rgba(255, 255, 255, 0.03);
+    --grid: rgba(255, 255, 255, 0.02);
+    --black-accent: #0a0a0b;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html, body, #root {
+    overflow: hidden;
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    background-image: 
+      linear-gradient(to right, var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+    position: relative;
+  }
+
+  html[data-performance='low'] body {
+    background-attachment: scroll;
+  }
+
+  html[data-performance='low'] body::before {
+    opacity: 0.35;
+  }
+
+  html[data-performance='low'] .ecosystem-card,
+  html[data-performance='low'] .backdrop-blur-xl,
+  html[data-performance='low'] .backdrop-blur-lg,
+  html[data-performance='low'] .backdrop-blur-md,
+  html[data-performance='low'] .backdrop-blur-sm {
+    backdrop-filter: none !important;
+  }
+
+  html[data-performance='low'] .ecosystem-card {
+    box-shadow: none !important;
+  }
+
+  html[data-performance='low'] .animate-pulse,
+  html[data-performance='low'] .animate-spin,
+  html[data-performance='low'] .animate-bounce,
+  html[data-performance='low'] [class*='animate-[spin_30s_linear_infinite]'],
+  html[data-performance='low'] [class*='animate-[spin_20s_linear_infinite_reverse]'] {
+    animation: none !important;
+  }
+
+  html[data-performance='low'] .shadow-2xl,
+  html[data-performance='low'] .shadow-xl,
+  html[data-performance='low'] .shadow-lg,
+  html[data-performance='low'] .shadow-md {
+    box-shadow: none !important;
+  }
+
+  html[data-performance='low'] .perf-heavy {
+    display: none !important;
+  }
+  
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 50% 50%, transparent 30%, var(--background) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+}
+
+@layer utilities {
+  .ecosystem-card {
+    @apply bg-card backdrop-blur-xl border border-border shadow-[0_0_15px_rgba(0,0,0,0.02)] dark:shadow-[0_0_20px_var(--glow)] transition-all duration-300 relative overflow-hidden;
+  }
+  
+  .ecosystem-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .ecosystem-card:hover::before {
+    opacity: 0.6;
+  }
+  
+  .ecosystem-card:hover {
+    @apply border-primary/20 shadow-[0_0_30px_-5px_var(--glow)];
+  }
+
+  html[data-performance='low'] .ecosystem-card:hover {
+    box-shadow: none !important;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

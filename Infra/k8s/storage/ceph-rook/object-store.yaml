@@ -1,0 +1,25 @@
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStore
+metadata:
+  name: arturo-object-store
+  namespace: rook-ceph
+spec:
+  metadataPool:
+    replicated:
+      size: 1
+  dataPool:
+    replicated:
+      size: 1
+  preservePoolsOnDelete: true
+  gateway:
+    port: 80
+    instances: 1
+---
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStoreUser
+metadata:
+  name: arturo-app-user
+  namespace: rook-ceph
+spec:
+  store: arturo-object-store
+  displayName: Arturo App User

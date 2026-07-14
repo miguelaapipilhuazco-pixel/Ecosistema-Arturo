@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-fastapi
+  namespace: arturo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-fastapi
+  template:
+    metadata:
+      labels:
+        app: backend-fastapi
+    spec:
+      containers:
+        - name: fastapi
+          image: python:3.12-slim
+          command: ["sh", "-c"]
+          args:
+            - pip install --no-cache-dir fastapi==0.115.4 uvicorn[standard]==0.32.0 prometheus-fastapi-instrumentator==7.0.0 &&
+              uvicorn app.main:app --host 0.0.0.0 --port 8000
+          workingDir: /app
+          volumeMounts:
+            - name: app-code
+              mountPath: /app
+          ports:
+            - containerPort: 8000
+      volumes:
+        - name: app-code
+          hostPath:
+            path: /opt/arturo/backend-fastapi
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-fastapi
+  namespace: arturo
+spec:
+  selector:
+    app: backend-fastapi
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

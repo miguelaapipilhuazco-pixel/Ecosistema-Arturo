@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: arturo
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: arturo-observability
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rook-ceph

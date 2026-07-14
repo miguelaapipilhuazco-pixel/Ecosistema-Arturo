@@ -1,0 +1,228 @@
+version: "3.9"
+
+name: arturo-ecosystem
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: arturo-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend-fastapi
+      - backend-rust
+    networks:
+      - arturo-net
+
+  backend-fastapi:
+    image: python:3.12-slim
+    container_name: arturo-fastapi
+    working_dir: /app
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    volumes:
+      - ./backend-fastapi:/app
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: arturo
+      POSTGRES_USER: arturo
+      POSTGRES_PASSWORD: arturo_dev_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MINIO_HOST: minio
+      MINIO_PORT: 9000
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 9092
+      OPENSEARCH_HOST: opensearch
+      OPENSEARCH_PORT: 9200
+      OLLAMA_HOST: ollama
+      OLLAMA_PORT: 11434
+      VLLM_HOST: vllm
+      VLLM_PORT: 8001
+      SYNCTHING_HOST: syncthing
+      SYNCTHING_PORT: 8384
+      PROMETHEUS_HOST: prometheus
+      PROMETHEUS_PORT: 9090
+      PROMETHEUS_OCCUPANCY_QUERY: arturo_storage_occupancy_percent
+      OPENSEARCH_CAPACITY_TB: 1000
+    depends_on:
+      - postgres
+      - redis
+      - minio
+      - kafka
+      - opensearch
+      - ollama
+      - syncthing
+    networks:
+      - arturo-net
+
+  backend-rust:
+    image: rust:1.82
+    container_name: arturo-rust
+    working_dir: /srv
+    command: sh -c "cargo run"
+    volumes:
+      - ./backend-rust:/srv
+    ports:
+      - "8080:8080"
+    networks:
+      - arturo-net
+
+  postgres:
+    image: postgres:16
+    container_name: arturo-postgres
+    environment:
+      POSTGRES_DB: arturo
+      POSTGRES_USER: arturo
+      POSTGRES_PASSWORD: arturo_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - arturo-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: arturo-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - arturo-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: arturo-minio
+    environment:
+      MINIO_ROOT_USER: arturo
+      MINIO_ROOT_PASSWORD: arturo_minio_password
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - arturo-net
+
+  syncthing:
+    image: syncthing/syncthing:latest
+    container_name: arturo-syncthing
+    ports:
+      - "8384:8384"
+      - "22000:22000/tcp"
+      - "22000:22000/udp"
+      - "21027:21027/udp"
+    volumes:
+      - syncthing-data:/var/syncthing
+    networks:
+      - arturo-net
+
+  kafka:
+    image: bitnami/kafka:3.9
+    container_name: arturo-kafka
+    environment:
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/bitnami/kafka
+    networks:
+      - arturo-net
+
+  opensearch:
+    image: opensearchproject/opensearch:2.17.1
+    container_name: arturo-opensearch
+    environment:
+      discovery.type: single-node
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ArturoSearchAdmin_123
+      bootstrap.memory_lock: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    networks:
+      - arturo-net
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: arturo-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - arturo-net
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    container_name: arturo-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: arturo_grafana_password
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - arturo-net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: arturo-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - arturo-net
+
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: arturo-vllm
+    command: ["--host", "0.0.0.0", "--port", "8001", "--model", "Qwen/Qwen2.5-0.5B-Instruct"]
+    ports:
+      - "8001:8001"
+    profiles:
+      - gpu
+    networks:
+      - arturo-net
+
+networks:
+  arturo-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  syncthing-data:
+  kafka-data:
+  opensearch-data:
+  grafana-data:
+  ollama-data:

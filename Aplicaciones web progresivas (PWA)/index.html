@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proyecto Feria de Ciencias</title>
+    <meta name="theme-color" content="#111113" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script>
+      (function() {
+        try {
+          var savedTheme = localStorage.getItem('ecosystem_theme');
+          var themeColor = savedTheme === 'light' ? '#f2f2f4' : '#111113';
+          var themeMeta = document.querySelector('meta[name="theme-color"]');
+          if (themeMeta) {
+            themeMeta.setAttribute('content', themeColor);
+          }
+        } catch (error) {
+          console.warn('No se pudo aplicar el color inicial del tema.', error);
+        }
+      })();
+    </script>
+    <script>
+      // Canvas Safety Guard
+      (function() {
+        if (typeof window === 'undefined') return;
+        
+        const createDummyCtx = () => {
+          const target = {
+            canvas: { width: 800, height: 600, style: {} },
+            alpha: 1,
+            beta: 1,
+            gamma: 1,
+            // WebGL Constants
+            VERSION: 0x1F02,
+            SHADING_LANGUAGE_VERSION: 0x8B8C,
+            VENDOR: 0x1F00,
+            RENDERER: 0x1F01,
+            getContextAttributes: () => ({ alpha: true, desynchronized: false, antialias: true }),
+            getParameter: (p) => {
+              if (p === 0x1F02) return 'WebGL 2.0';
+              if (p === 0x8B8C) return 'WebGL GLSL ES 3.00';
+              if (p === 0x1F00) return 'Google Inc.';
+              if (p === 0x1F01) return 'Mozilla/5.0';
+              return '';
+            }
+          };
+          return new Proxy(target, {
+            get(t, prop) {
+              if (prop === 'globalCompositeOperation') return 'source-over';
+              if (prop === 'getImageData') return () => ({ data: new Uint8ClampedArray(0), width: 0, height: 0 });
+              if (prop === 'measureText') return () => ({ width: 0 });
+              if (prop === 'createImageData') return () => ({ data: new Uint8ClampedArray(0) });
+              if (prop in t) return t[prop];
+              if (typeof prop === 'string' && prop.startsWith('set')) return () => {};
+              return (...args) => {
+                if (typeof prop === 'string') {
+                  if (prop === 'getShaderPrecisionFormat') {
+                    return { rangeMin: 127, rangeMax: 127, precision: 23 };
+                  }
+                  if (prop === 'getExtension') {
+                    return null;
+                  }
+                  if (prop === 'getProgramInfoLog' || prop === 'getShaderInfoLog') {
+                    return '';
+                  }
+                }
+                return t;
+              };
+            },
+            set(t, prop, value) {
+              t[prop] = value;
+              return true;
+            }
+          });
+        };
+
+        const patchGetContext = (Proto) => {
+          if (!Proto || !Proto.getContext) return;
+          const original = Proto.getContext;
+          Proto.getContext = function(type, ...args) {
+            try {
+              const ctx = original.apply(this, [type, ...args]);
+              return ctx || createDummyCtx();
+            } catch (e) {
+              return createDummyCtx();
+            }
+          };
+        };
+
+        if (typeof HTMLCanvasElement !== 'undefined') patchGetContext(HTMLCanvasElement.prototype);
+        if (typeof OffscreenCanvas !== 'undefined') patchGetContext(OffscreenCanvas.prototype);
+
+        window.addEventListener('error', function(e) {
+          const msg = (e.message || '').toLowerCase();
+          if (msg.includes('globalcompositeoperation')) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function(e) {
+          const msg = (e.reason && e.reason.message || '').toLowerCase();
+          if (msg.includes('globalcompositeoperation')) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }, true);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-rust
+  namespace: arturo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-rust
+  template:
+    metadata:
+      labels:
+        app: backend-rust
+    spec:
+      containers:
+        - name: rust
+          image: rust:1.82
+          command: ["sh", "-c"]
+          args:
+            - cargo run
+          workingDir: /srv
+          volumeMounts:
+            - name: app-code
+              mountPath: /srv
+          ports:
+            - containerPort: 8080
+      volumes:
+        - name: app-code
+          hostPath:
+            path: /opt/arturo/backend-rust
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-rust
+  namespace: arturo
+spec:
+  selector:
+    app: backend-rust
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

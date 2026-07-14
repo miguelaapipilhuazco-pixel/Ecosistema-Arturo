@@ -1,0 +1,37 @@
+# IDEs y editores
+.gemini/
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Dependencias de Node
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Carpeta de build de React/Vite
+**/dist/
+
+# Archivos de entorno y credenciales locales
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.server.pid
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
