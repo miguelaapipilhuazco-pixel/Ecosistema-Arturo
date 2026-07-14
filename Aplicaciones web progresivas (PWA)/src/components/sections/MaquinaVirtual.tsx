@@ -152,7 +152,7 @@ const MetaStoreLogo = ({ className }: { className?: string }) => (
   <img src="https://cdn.simpleicons.org/meta/0467DF" className={className || "w-5 h-5 shrink-0"} alt="Meta Quest Store" />
 );
 const MicrosoftStoreLogo = ({ className }: { className?: string }) => (
-  <img src="https://cdn.simpleicons.org/microsoftstore/00A4EF" className={className || "w-5 h-5 shrink-0"} alt="Microsoft Store" />
+  <img src="https://cdn.simpleicons.org/microsoft/F25022" className={className || "w-5 h-5 shrink-0"} alt="Microsoft Store" />
 );
 const FlathubLogo = ({ className }: { className?: string }) => (
   <img src="https://cdn.simpleicons.org/flathub/4A90E2" className={className || "w-5 h-5 shrink-0"} alt="Flathub Store" />
