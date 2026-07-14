@@ -153,6 +153,26 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
   const [carpetasNube, setCarpetasNube] = useState<any[]>([]);
   const [mensajeRuntime, setMensajeRuntime] = useState('');
 
+  const seleccionarDispositivo = (key: 'all' | 'desktop' | 'mobile' | 'vr') => {
+    setFiltroDispositivo(key);
+    if (key === 'desktop') {
+      if (filtroOS === 'android') setFiltroOS('all');
+    } else if (key === 'mobile') {
+      if (filtroOS === 'windows' || filtroOS === 'macos' || filtroOS === 'linux') setFiltroOS('all');
+    } else if (key === 'vr') {
+      if (filtroOS !== 'all' && filtroOS !== 'android') setFiltroOS('android');
+    }
+  };
+
+  const seleccionarOS = (key: 'all' | 'windows' | 'macos' | 'linux' | 'android' | 'ios') => {
+    setFiltroOS(key);
+    if (key === 'windows' || key === 'macos' || key === 'linux') {
+      if (filtroDispositivo === 'mobile' || filtroDispositivo === 'vr') setFiltroDispositivo('desktop');
+    } else if (key === 'android' || key === 'ios') {
+      if (filtroDispositivo === 'desktop') setFiltroDispositivo('all');
+    }
+  };
+
   useEffect(() => {
     if (!usuario) {
       setAppsNube([]);
