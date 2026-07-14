@@ -92,12 +92,20 @@ export default function ActiveAppContainer({ app, onExit, visible }: ActiveAppCo
              />
            </div>
            <button
-             onClick={() => window.open(urlNavegador, '_blank', 'noopener,noreferrer')}
-             className="p-2 rounded-xl border border-border bg-card hover:border-primary/50 hover:text-primary transition-all shrink-0"
-             title="Abrir en pestaña nueva"
-           >
-             <ExternalLink className="w-4 h-4" />
-           </button>
+              onClick={() => setUsarProxy(!usarProxy)}
+              className={`p-2 rounded-xl border transition-all shrink-0 flex items-center gap-1.5 ${usarProxy ? 'bg-primary/10 border-primary text-primary shadow-[0_0_10px_var(--glow)]' : 'bg-card border-border text-muted-foreground hover:border-primary/50'}`}
+              title={usarProxy ? "Proxy Activo: Evita bloqueos de iframe" : "Modo Directo: Carga rápida sin proxy"}
+            >
+              {usarProxy ? <Shield className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />}
+              <span className="text-[8px] font-bold uppercase tracking-wider hidden sm:inline">{usarProxy ? 'Proxy ON' : 'Proxy OFF'}</span>
+            </button>
+            <button
+              onClick={() => window.open(urlNavegador, '_blank', 'noopener,noreferrer')}
+              className="p-2 rounded-xl border border-border bg-card hover:border-primary/50 hover:text-primary transition-all shrink-0"
+              title="Abrir en pestaña nueva"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </button>
          </div>
           <button 
             onClick={onExit} 
@@ -109,7 +117,7 @@ export default function ActiveAppContainer({ app, onExit, visible }: ActiveAppCo
        </div>
        <div className="flex-1 w-full bg-white relative overflow-hidden">
          <iframe 
-           src={`/api/proxy?url=${encodeURIComponent(urlNavegador)}`} 
+           src={usarProxy ? `/api/proxy?url=${encodeURIComponent(urlNavegador)}` : urlNavegador} 
            className="w-full h-full border-none" 
            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
            title="Visualizador de Aplicación"
