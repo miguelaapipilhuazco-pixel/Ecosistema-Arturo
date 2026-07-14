@@ -428,11 +428,16 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
               ].map(d => {
                 const IconComponent = d.icon;
                 const active = filtroDispositivo === d.key;
+                const incompatible = 
+                  (d.key === 'desktop' && filtroOS === 'android') ||
+                  (d.key === 'mobile' && (filtroOS === 'windows' || filtroOS === 'macos' || filtroOS === 'linux')) ||
+                  (d.key === 'vr' && (filtroOS !== 'all' && filtroOS !== 'android'));
+
                 return (
                   <button
                     key={d.key}
-                    onClick={() => setFiltroDispositivo(d.key as any)}
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[8px] font-bold uppercase tracking-wider border transition-all ${active ? 'bg-primary/10 border-primary text-primary shadow-[0_0_10px_var(--glow)]' : 'bg-transparent border-transparent text-muted-foreground hover:bg-muted/40'}`}
+                    onClick={() => seleccionarDispositivo(d.key as any)}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[8px] font-bold uppercase tracking-wider border transition-all ${incompatible ? 'opacity-30 hover:opacity-50' : ''} ${active ? 'bg-primary/10 border-primary text-primary shadow-[0_0_10px_var(--glow)]' : 'bg-transparent border-transparent text-muted-foreground hover:bg-muted/40'}`}
                   >
                     <IconComponent className="w-3.5 h-3.5" />
                     <span>{d.label}</span>
@@ -452,11 +457,15 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
               ].map(o => {
                 const IconComponent = o.icon;
                 const active = filtroOS === o.key;
+                const incompatible =
+                  (o.key === 'android' && filtroDispositivo === 'desktop') ||
+                  ((o.key === 'windows' || o.key === 'macos' || o.key === 'linux') && (filtroDispositivo === 'mobile' || filtroDispositivo === 'vr'));
+
                 return (
                   <button
                     key={o.key}
-                    onClick={() => setFiltroOS(o.key as any)}
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[8px] font-bold uppercase tracking-wider border transition-all ${active ? 'bg-primary/10 border-primary text-primary shadow-[0_0_10px_var(--glow)]' : 'bg-transparent border-transparent text-muted-foreground hover:bg-muted/40'}`}
+                    onClick={() => seleccionarOS(o.key as any)}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[8px] font-bold uppercase tracking-wider border transition-all ${incompatible ? 'opacity-30 hover:opacity-50' : ''} ${active ? 'bg-primary/10 border-primary text-primary shadow-[0_0_10px_var(--glow)]' : 'bg-transparent border-transparent text-muted-foreground hover:bg-muted/40'}`}
                   >
                     <IconComponent className="w-3.5 h-3.5" />
                     <span>{o.label}</span>
