@@ -99,13 +99,6 @@ export default function ActiveAppContainer({ app, onExit, visible }: ActiveAppCo
               {usarProxy ? <Shield className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />}
               <span className="text-[8px] font-bold uppercase tracking-wider hidden sm:inline">{usarProxy ? 'Proxy ON' : 'Proxy OFF'}</span>
             </button>
-            <button
-              onClick={() => window.open(urlNavegador, '_blank', 'noopener,noreferrer')}
-              className="p-2 rounded-xl border border-border bg-card hover:border-primary/50 hover:text-primary transition-all shrink-0"
-              title="Abrir en pestaña nueva"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </button>
          </div>
           <button 
             onClick={onExit} 
