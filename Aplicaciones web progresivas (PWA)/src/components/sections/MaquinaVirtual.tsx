@@ -142,6 +142,22 @@ const QuestBrowserLogo = ({ className }: { className?: string }) => (
   <img src="https://cdn.simpleicons.org/meta/0467DF" className={className || "w-5 h-5 shrink-0"} alt="Quest Browser" />
 );
 
+const GooglePlayLogo = ({ className }: { className?: string }) => (
+  <img src="https://cdn.simpleicons.org/googleplay/00F0FF" className={className || "w-5 h-5 shrink-0"} alt="Google Play Store" />
+);
+const AppStoreLogo = ({ className }: { className?: string }) => (
+  <img src="https://cdn.simpleicons.org/appstore/007AFF" className={className || "w-5 h-5 shrink-0"} alt="Apple App Store" />
+);
+const MetaStoreLogo = ({ className }: { className?: string }) => (
+  <img src="https://cdn.simpleicons.org/meta/0467DF" className={className || "w-5 h-5 shrink-0"} alt="Meta Quest Store" />
+);
+const MicrosoftStoreLogo = ({ className }: { className?: string }) => (
+  <img src="https://cdn.simpleicons.org/microsoftstore/00A4EF" className={className || "w-5 h-5 shrink-0"} alt="Microsoft Store" />
+);
+const FlathubLogo = ({ className }: { className?: string }) => (
+  <img src="https://cdn.simpleicons.org/flathub/4A90E2" className={className || "w-5 h-5 shrink-0"} alt="Flathub Store" />
+);
+
 function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: any) => void, key?: string }) {
   const [filtroDispositivo, setFiltroDispositivo] = useState<'all' | 'desktop' | 'mobile' | 'vr'>('all');
   const [filtroOS, setFiltroOS] = useState<'all' | 'windows' | 'linux' | 'macos' | 'android' | 'ios'>('all');
@@ -292,6 +308,66 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
       status: 'Disponible',
       launchType: 'web',
       url: 'https://www.meta.com/help/quest/',
+      runtimeType: 'app'
+    },
+    {
+      title: 'Google Play Store',
+      desc: 'Android App Store',
+      logo: GooglePlayLogo,
+      deviceIcon: Smartphone,
+      os: ['android'],
+      showOnVR: false,
+      status: 'Disponible',
+      launchType: 'web',
+      url: 'https://play.google.com/store',
+      runtimeType: 'app'
+    },
+    {
+      title: 'Apple App Store',
+      desc: 'iOS & macOS App Store',
+      logo: AppStoreLogo,
+      deviceIcon: Smartphone,
+      os: ['ios', 'macos'],
+      showOnVR: false,
+      status: 'Disponible',
+      launchType: 'web',
+      url: 'https://www.apple.com/app-store/',
+      runtimeType: 'app'
+    },
+    {
+      title: 'Meta Quest Store',
+      desc: 'Meta VR & MR Store',
+      logo: MetaStoreLogo,
+      deviceIcon: Glasses,
+      os: ['android'],
+      showOnVR: true,
+      status: 'Disponible',
+      launchType: 'web',
+      url: 'https://www.meta.com/experiences/',
+      runtimeType: 'app'
+    },
+    {
+      title: 'Microsoft Store',
+      desc: 'Windows Desktop Store',
+      logo: MicrosoftStoreLogo,
+      deviceIcon: Monitor,
+      os: ['windows'],
+      showOnVR: false,
+      status: 'Disponible',
+      launchType: 'web',
+      url: 'https://apps.microsoft.com/',
+      runtimeType: 'app'
+    },
+    {
+      title: 'Flathub Store',
+      desc: 'Linux App Repository',
+      logo: FlathubLogo,
+      deviceIcon: Monitor,
+      os: ['linux'],
+      showOnVR: false,
+      status: 'Disponible',
+      launchType: 'web',
+      url: 'https://flathub.org/',
       runtimeType: 'app'
     }
   ];
