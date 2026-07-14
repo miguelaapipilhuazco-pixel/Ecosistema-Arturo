@@ -200,7 +200,8 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
       showOnVR: false,
       status: 'Disponible',
       launchType: 'web',
-      url: 'https://html.duckduckgo.com/html/'
+      url: 'https://html.duckduckgo.com/html/',
+      runtimeType: 'app'
     },
     {
       title: 'Ollama Local',
@@ -210,7 +211,8 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
       os: ['windows', 'linux', 'macos', 'android'],
       showOnVR: false,
       status: 'Disponible',
-      launchType: 'chat'
+      launchType: 'chat',
+      runtimeType: 'program'
     },
     {
       title: 'Wolvic',
@@ -221,7 +223,8 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
       showOnVR: true,
       status: 'Disponible',
       launchType: 'web',
-      url: 'https://wolvic.com'
+      url: 'https://wolvic.com',
+      runtimeType: 'app'
     },
     {
       title: 'Quest Browser',
@@ -232,7 +235,8 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
       showOnVR: true,
       status: 'Disponible',
       launchType: 'web',
-      url: 'https://www.meta.com/help/quest/'
+      url: 'https://www.meta.com/help/quest/',
+      runtimeType: 'app'
     }
   ];
 
