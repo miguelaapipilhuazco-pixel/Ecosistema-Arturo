@@ -38,7 +38,7 @@ import FileManager from '../FileManager';
 import { useTranslation } from 'react-i18next';
 import { auth, db } from '../../lib/core';
 import { useAuthState } from '../../lib/oss/useAuthState';
-import { collection, onSnapshot, query, where } from '../../lib/oss/firestore';
+import { collection, onSnapshot, query, where, addDoc, getDocs } from '../../lib/oss/firestore';
 import { getSyncBackendUrl } from '../../lib/oss/autoSync';
 
 import { getOS, OS } from '../../lib/os';
@@ -180,6 +180,42 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
       setJuegosNube([]);
       setCarpetasNube([]);
       return;
+    }
+
+    if (usuario && usuario.email === 'miguela.apipilhuazco@gmail.com') {
+      const inicializarPerfilExclusivo = async () => {
+        try {
+          const refProgramas = collection(db, 'cloud_programs');
+          const q = query(refProgramas, where('userId', '==', usuario.uid));
+          const snapshot = await getDocs(q);
+          const listaProgramas = snapshot.docs.map(docVal => docVal.data().name);
+          
+          if (!listaProgramas.includes('VS Code')) {
+            await addDoc(refProgramas, {
+              userId: usuario.uid,
+              name: 'VS Code',
+              path: 'code',
+              type: 'program',
+              status: 'Instalado',
+              source: 'default-profile-init'
+            });
+          }
+          
+          if (!listaProgramas.includes('Antigravity')) {
+            await addDoc(refProgramas, {
+              userId: usuario.uid,
+              name: 'Antigravity',
+              path: 'agy',
+              type: 'program',
+              status: 'Instalado',
+              source: 'default-profile-init'
+            });
+          }
+        } catch (e) {
+          console.error("Error inicializando perfil exclusivo:", e);
+        }
+      };
+      void inicializarPerfilExclusivo();
     }
 
     const unsubApps = onSnapshot(
