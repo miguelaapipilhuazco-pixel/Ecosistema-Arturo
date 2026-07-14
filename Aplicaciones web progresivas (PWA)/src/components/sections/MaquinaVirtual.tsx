@@ -158,6 +158,14 @@ const FlathubLogo = ({ className }: { className?: string }) => (
   <img src="https://cdn.simpleicons.org/flathub/4A90E2" className={className || "w-5 h-5 shrink-0"} alt="Flathub Store" />
 );
 
+const VSCodeLogo = ({ className }: { className?: string }) => (
+  <img src="https://cdn.simpleicons.org/visualstudiocode/007ACC" className={className || "w-5 h-5 shrink-0"} alt="VS Code" />
+);
+
+const AntigravityLogo = ({ className }: { className?: string }) => (
+  <img src="https://cdn.simpleicons.org/googlegemini/8E78FF" className={className || "w-5 h-5 shrink-0"} alt="Antigravity" />
+);
+
 function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: any) => void, key?: string }) {
   const [filtroDispositivo, setFiltroDispositivo] = useState<'all' | 'desktop' | 'mobile' | 'vr'>('all');
   const [filtroOS, setFiltroOS] = useState<'all' | 'windows' | 'linux' | 'macos' | 'android' | 'ios'>('all');
@@ -387,19 +395,25 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
       source: 'cloud',
       runtimeType: 'app',
     })),
-    ...programasNube.map((item) => ({
-      title: String(item.name || 'Programa Nube'),
-      desc: String(item.path || item.source || 'Programa importado desde el dispositivo'),
-      logo: Code,
-      deviceIcon: Monitor,
-      os: ['windows'],
-      showOnVR: false,
-      status: String(item.status || 'Importado'),
-      launchType: 'local-exec',
-      path: String(item.path || ''),
-      source: 'cloud',
-      runtimeType: 'program',
-    })),
+    ...programasNube.map((item) => {
+      let logoIcon = Code;
+      if (item.name === 'VS Code') logoIcon = VSCodeLogo;
+      else if (item.name === 'Antigravity') logoIcon = AntigravityLogo;
+
+      return {
+        title: String(item.name || 'Programa Nube'),
+        desc: String(item.path || item.source || 'Programa importado desde el dispositivo'),
+        logo: logoIcon,
+        deviceIcon: Monitor,
+        os: ['windows'],
+        showOnVR: false,
+        status: String(item.status || 'Importado'),
+        launchType: 'local-exec',
+        path: String(item.path || ''),
+        source: 'cloud',
+        runtimeType: 'program',
+      };
+    }),
     ...juegosNube.map((item) => ({
       title: String(item.name || 'Juego Nube'),
       desc: String(item.path || item.source || 'Juego importado desde el dispositivo'),
