@@ -98,7 +98,7 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
   const etiquetaSesion = usuario
     ? (dispositivoCompartido ? `Equipo compartido: ${nombreEquipoReal || 'desconocido'}` : `Equipo: ${nombreEquipoReal || 'desconocido'}`)
     : 'Offline';
-  const mostrarAlertaGit = Boolean(gitAutoPushStatus?.lastError);
+  const mostrarAlertaGit = Boolean(gitAutoPushStatus?.lastError) && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
   const formatearUltimoPush = () => {
     if (!gitAutoPushStatus?.lastSuccessAt) return 'sin push reciente';
