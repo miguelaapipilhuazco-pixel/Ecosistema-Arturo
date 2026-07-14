@@ -1006,44 +1006,48 @@ async function startServer() {
 
     try {
       const targetPath = rawPath.replace(/\//g, "\\");
-      if (!isAbsoluteWindowsPath(targetPath)) {
-        res.status(400).json({ ok: false, error: "Ruta invalida para lanzamiento local" });
-        return;
-      }
+      const isGlobalCmd = targetPath.toLowerCase() === "code" || targetPath.toLowerCase() === "agy";
 
-      if (!fs.existsSync(targetPath)) {
-        res.status(404).json({ ok: false, error: "No existe la ruta indicada" });
-        return;
-      }
+      if (!isGlobalCmd) {
+        if (!isAbsoluteWindowsPath(targetPath)) {
+          res.status(400).json({ ok: false, error: "Ruta invalida para lanzamiento local" });
+          return;
+        }
 
-      const stats = fs.statSync(targetPath);
-      if (stats.isDirectory()) {
-        const proc = spawn("explorer.exe", [targetPath], {
-          detached: true,
-          stdio: "ignore",
-          windowsHide: true,
-        });
-        proc.unref();
-        res.json({ ok: true, launched: true, mode: "folder", path: targetPath });
-        return;
-      }
+        if (!fs.existsSync(targetPath)) {
+          res.status(404).json({ ok: false, error: "No existe la ruta indicada" });
+          return;
+        }
 
-      const ext = path.extname(targetPath).toLowerCase();
-      const allowed = new Set([".exe", ".lnk", ".url", ".appref-ms", ".bat", ".cmd", ".msc", ".ps1"]);
-      if (!allowed.has(ext)) {
-        res.status(400).json({ ok: false, error: `Extension no permitida: ${ext}` });
-        return;
+        const stats = fs.statSync(targetPath);
+        if (stats.isDirectory()) {
+          const proc = spawn("explorer.exe", [targetPath], {
+            detached: true,
+            stdio: "ignore",
+            windowsHide: true,
+          });
+          proc.unref();
+          res.json({ ok: true, launched: true, mode: "folder", path: targetPath });
+          return;
+        }
+
+        const ext = path.extname(targetPath).toLowerCase();
+        const allowed = new Set([".exe", ".lnk", ".url", ".appref-ms", ".bat", ".cmd", ".msc", ".ps1"]);
+        if (!allowed.has(ext)) {
+          res.status(400).json({ ok: false, error: `Extension no permitida: ${ext}` });
+          return;
+        }
       }
 
       const cmdPath = targetPath.replace(/"/g, "");
-      const proc = spawn("cmd.exe", ["/c", "start", "", `\"${cmdPath}\"`], {
+      const proc = spawn("cmd.exe", ["/c", "start", "", isGlobalCmd ? cmdPath : `\"${cmdPath}\"`], {
         detached: true,
         stdio: "ignore",
         windowsHide: true,
       });
       proc.unref();
 
-      res.json({ ok: true, launched: true, mode: "file", path: targetPath });
+      res.json({ ok: true, launched: true, mode: isGlobalCmd ? "command" : "file", path: targetPath });
     } catch (error: any) {
       res.status(500).json({ ok: false, error: error?.message || "No se pudo lanzar el recurso local" });
     }
