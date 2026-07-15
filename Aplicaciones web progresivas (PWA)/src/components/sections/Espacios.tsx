@@ -481,54 +481,16 @@ export default function Espacios() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            {espacioActivo.id === 'comunidad' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {usuariosAgrupados.map(({ principal, cuentasVinculadas }) => (
-                  <div key={principal.id} className="ecosystem-card p-6 flex items-center gap-4 group hover:border-primary/40 transition-all bg-card/20 backdrop-blur-md">
-                    {/* Foto principal */}
-                    <div className="relative shrink-0">
-                      <div className="absolute inset-0 bg-primary/30 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      <div className="relative z-10 w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-primary/20 p-0.5 bg-background/50 shadow-[0_0_25px_var(--primary-shadow)] group-hover:shadow-[0_0_40px_var(--primary-shadow-hover)] transition-all duration-500">
-                        <img
-                          src={principal.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(principal.displayName || 'U')}&background=888&color=fff`}
-                          alt={principal.displayName}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      </div>
-                      {/* Fotos de cuentas vinculadas apiladas */}
-                      {cuentasVinculadas.slice(0, 2).map((cv, ci) => (
-                        <img
-                          key={cv.id}
-                          src={cv.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(cv.displayName || 'U')}&background=555&color=fff`}
-                          alt={cv.displayName}
-                          title={cv.email || cv.displayName}
-                          className="absolute -bottom-1 rounded-full border border-border object-cover w-6 h-6"
-                          style={{ right: `${ci * 18}px`, zIndex: 10 - ci }}
-                        />
-                      ))}
-                    </div>
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display text-xs sm:text-sm uppercase tracking-[0.2em] truncate">
-                        {principal.displayName || 'Usuario'}
-                        {principal.id === usuarioActual?.uid && <span className="ml-2 text-[9px] text-primary font-bold">(TÚ)</span>}
-                      </h3>
-                      <p className="font-mono text-[8px] text-muted-foreground uppercase tracking-widest opacity-50 mt-0.5 truncate">
-                        {principal.email || ''}
-                      </p>
-                      {cuentasVinculadas.length > 0 && (
-                        <p className="font-mono text-[8px] text-primary/60 uppercase tracking-widest mt-1">
-                          +{cuentasVinculadas.length} cuenta{cuentasVinculadas.length > 1 ? 's' : ''} vinculada{cuentasVinculadas.length > 1 ? 's' : ''}
-                        </p>
-                      )}
-                      <p className="font-mono text-[8px] text-muted-foreground uppercase tracking-widest opacity-40 mt-0.5">
-                        {principal.status || 'OFFLINE'}
-                      </p>
-                    </div>
-                    {/* Indicador online */}
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${principal.status === 'online' ? 'bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse' : 'bg-muted-foreground opacity-30'}`} />
-                  </div>
-                ))}
+            {espacioActivo.id === 'mis-cuentas' ? (
+              <div className="space-y-6">
+                <button 
+                  onClick={() => setEspacioActivo(null)}
+                  className="flex items-center gap-2 p-2 px-3 border border-border bg-card hover:border-primary/50 transition-all rounded-xl w-fit font-mono text-[9px] uppercase tracking-widest"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  {t("Volver a Espacios")}
+                </button>
+                <CuentaEIdentidad />
               </div>
             ) : (
               <div className="space-y-6">
