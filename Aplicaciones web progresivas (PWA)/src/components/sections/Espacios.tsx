@@ -12,6 +12,7 @@ import { collection, onSnapshot, query, limit, addDoc, where } from '../../lib/o
 import { useAuthState } from '../../lib/oss/useAuthState';
 import { getIconComponent } from '../../config/sections';
 import FileManager from '../FileManager';
+import CuentaEIdentidad from './CuentaEIdentidad';
 
 export default function Espacios() {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export default function Espacios() {
   const [usuarios, setUsuarios] = useState<any[]>([]);
   const [dispositivos, setDispositivos] = useState<any[]>([]);
   const [espacios, setEspacios] = useState<any[]>([
-    { id: 'comunidad', name: t("Comunidad"), icon: Globe, color: "text-primary", desc: t("Usuarios conectados al ecosistema") },
+    { id: 'mis-cuentas', name: t("Mis Cuentas"), icon: Users, color: "text-primary", desc: t("Administra tus cuentas y credenciales reales") },
     { id: 'nube', name: t("Nube"), icon: Layout, color: "text-sky-500", desc: t("Carpetas, programas y apps sincronizadas") },
     { id: 'ia_core', name: "Núcleo de Inteligencia", icon: Bot, color: "text-indigo-500", desc: t("Núcleo de inteligencia artificial") },
     { id: 'proyectos', name: t("Proyectos"), icon: Briefcase, color: "text-amber-500", desc: t("Gestión de activos y tareas") },
