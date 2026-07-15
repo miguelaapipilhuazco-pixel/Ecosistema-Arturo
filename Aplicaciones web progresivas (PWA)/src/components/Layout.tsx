@@ -11,7 +11,6 @@ import type { GoogleAuthProvider, OAuthProvider } from '../lib/oss/auth';
 import { getOS, OS } from '../lib/os';
 import { getOrCreateSyncDeviceId, getSyncDeviceDisplayName } from '../lib/oss/autoSync';
 import { usePWAInstall } from '../lib/usePWAInstall';
-import { getHardwareProfile } from '../lib/hardwareProfile';
 
 interface PropsDiseño {
   children: React.ReactNode;
@@ -21,18 +20,6 @@ interface PropsDiseño {
   modoColor: boolean;
   arturoLinkActivo: boolean;
   alternarArturoLink: () => void;
-}
-
-interface GitAutoPushStatus {
-  enabled: boolean;
-  isHealthy: boolean;
-  lastCheckAt: number | null;
-  lastPushAt: number | null;
-  lastSuccessAt: number | null;
-  lastError: string | null;
-  lastCommitMessage: string | null;
-  consecutiveFailures: number;
-  nextRetryInMs: number;
 }
 
 const OWNER_EMAILS = ['miguela.apipilhuazco@hotmail.com', 'miguelaarrioja@hotmail.com', 'miguelarrioja@hotmail.com'];
@@ -55,7 +42,6 @@ const ICONOS_SO: Record<OS, any> = {
 export default function Diseño({ children, seccionActiva, alNavegar, alternarTema, modoColor, arturoLinkActivo, alternarArturoLink }: PropsDiseño) {
   const { t } = useTranslation();
   const { isInstallable, installApp } = usePWAInstall();
-  const perfilHardware = useRef(getHardwareProfile()).current;
   const [secuenciaArranque, setSecuenciaArranque] = useState(true);
   const [menuUsuarioAbierto, setMenuUsuarioAbierto] = useState(false);
   const [mensajeAuth, setMensajeAuth] = useState<string | null>(null);
@@ -67,73 +53,21 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
   const [os, setOs] = useState<OS>('unknown');
   const [dispositivoCompartido, setDispositivoCompartido] = useState(false);
   const [nombreEquipoReal, setNombreEquipoReal] = useState<string>('');
-  const [gitAutoPushStatus, setGitAutoPushStatus] = useState<GitAutoPushStatus | null>(null);
   type AuthProvider = GoogleAuthProvider | OAuthProvider;
 
-  const NOMBRES_REALES: Record<string, string> = {
-    'miguela.apipilhuazco@hotmail.com': 'Miguel A. Apipilhuazco',
-    'miguelaarrioja@hotmail.com': 'Miguel Arrioja',
-    'miguelarrioja@hotmail.com': 'Miguel Arrioja'
-  };
-
-  const obtenerAvatarFallback = (nombre: string) => {
-    const iniciales = nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <defs>
-        <linearGradient id="gradAvatar" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-      <rect width="100" height="100" fill="url(#gradAvatar)"/>
-      <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="bold" font-size="36" fill="#ffffff">${iniciales}</text>
-    </svg>`;
-    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-  };
-
-  const correoVisible = (usuario?.email || localStorage.getItem('ecosystem_current_user') || '').trim();
-  const nombreUsuarioVisible = NOMBRES_REALES[correoVisible.toLowerCase()] || (usuario?.displayName || correoVisible.split('@')[0] || 'Usuario').trim();
+  const nombreUsuarioVisible = (usuario?.displayName || usuario?.email?.split('@')[0] || 'Usuario').trim();
+  const correoVisible = (usuario?.email || localStorage.getItem('last_login_email') || '').trim();
   const correoLocal = localStorage.getItem('ecosystem_current_user') || '';
   const esPropietario = esCorreoPropietario(correoLocal);
   const etiquetaSesion = usuario
     ? (dispositivoCompartido ? `Equipo compartido: ${nombreEquipoReal || 'desconocido'}` : `Equipo: ${nombreEquipoReal || 'desconocido'}`)
     : 'Offline';
-  const mostrarAlertaGit = Boolean(gitAutoPushStatus?.lastError) && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-  const formatearUltimoPush = () => {
-    if (!gitAutoPushStatus?.lastSuccessAt) return 'sin push reciente';
-    return new Date(gitAutoPushStatus.lastSuccessAt).toLocaleString();
-  };
 
   useEffect(() => {
     setOs(getOS());
     setNombreEquipoReal(getSyncDeviceDisplayName());
     const temporizador = setTimeout(() => setSecuenciaArranque(false), 1500);
     return () => clearTimeout(temporizador);
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-
-    const consultarEstadoGit = async () => {
-      try {
-        const response = await fetch('/api/git/auto-push-status');
-        if (!response.ok) return;
-        const data = await response.json();
-        if (active) {
-          setGitAutoPushStatus(data);
-        }
-      } catch {
-        // Avoid noisy UI errors when backend is unavailable.
-      }
-    };
-
-    consultarEstadoGit();
-    const interval = setInterval(consultarEstadoGit, 15000);
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
   }, []);
 
   useEffect(() => {
@@ -377,12 +311,9 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
   if (secuenciaArranque) {
     return (
       <div className="fixed inset-0 bg-background flex flex-col items-center justify-center font-mono text-primary z-[100]">
-        <Cpu className={`w-16 h-16 mb-8 ${perfilHardware.tier === 'low' ? '' : 'animate-pulse'}`} />
-        <div className={`text-xl tracking-[0.3em] uppercase text-center px-6 ${perfilHardware.tier === 'low' ? '' : 'animate-pulse'}`}>Inicializando Sistema...</div>
+        <Cpu className="w-16 h-16 animate-pulse mb-8" />
+        <div className="text-xl tracking-[0.3em] uppercase animate-pulse text-center px-6">Inicializando Sistema...</div>
         <div className="mt-4 text-xs opacity-50 text-center px-6">Cargando Secuencias de Memoria...</div>
-        <div className="mt-6 text-[10px] uppercase tracking-[0.3em] opacity-60 text-center px-6">
-          Perfil detectado: {perfilHardware.tier.toUpperCase()} / Texturas {perfilHardware.features.textures.toUpperCase()}
-        </div>
       </div>
     );
   }
@@ -435,7 +366,7 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
                 className="w-full flex items-center gap-3 p-2 rounded-xl border border-border/50 hover:bg-muted transition-colors relative"
               >
                 <img 
-                  src={usuario?.photoURL || obtenerAvatarFallback(nombreUsuarioVisible)} 
+                  src={usuario?.photoURL || "https://ui-avatars.com/api/?name=Guest&background=random&color=fff"} 
                   alt="Perfil" 
                   className="w-8 h-8 rounded-full object-cover border border-border/50 bg-primary/10"
                 />
@@ -452,11 +383,6 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
         <header className="shrink-0 h-14 border-b border-border bg-background/80 backdrop-blur-xl flex lg:hidden items-center justify-between px-4 z-50">
           <div className="flex items-center gap-3">
             <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-foreground">Ecosistema</span>
-            {mostrarAlertaGit && (
-              <span className="text-[8px] font-mono uppercase tracking-wider text-amber-500 border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 rounded-full">
-                Git Sync con error
-              </span>
-            )}
           </div>
           
           <div className="flex items-center gap-4">
@@ -465,7 +391,7 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
               className="flex items-center gap-2 p-1 rounded-full border border-border/50 hover:bg-muted transition-colors"
             >
               <img 
-                src={usuario?.photoURL || obtenerAvatarFallback(nombreUsuarioVisible)} 
+                src={usuario?.photoURL || "https://ui-avatars.com/api/?name=Guest&background=random&color=fff"} 
                 alt="Perfil" 
                 className="w-8 h-8 rounded-full object-cover border border-border/50 bg-primary/10"
               />
@@ -479,7 +405,7 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
             <div className="absolute top-16 right-4 lg:top-auto lg:right-auto lg:bottom-24 lg:left-4 w-64 rounded-xl border border-border bg-background/95 backdrop-blur-xl shadow-2xl z-[60] overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 lg:slide-in-from-bottom-2 duration-200">
               <div className="px-4 py-3 border-b border-border/50 mb-2 flex items-center gap-3">
                 <img 
-                  src={usuario?.photoURL || obtenerAvatarFallback(nombreUsuarioVisible)} 
+                  src={usuario?.photoURL || "https://ui-avatars.com/api/?name=Guest&background=random&color=fff"} 
                   alt="Perfil" 
                   className="w-10 h-10 rounded-full object-cover border border-border/50 bg-primary/10 shrink-0"
                 />
@@ -489,17 +415,6 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
                   <p className="text-[10px] text-primary/80 truncate font-mono mt-0.5">{etiquetaSesion}</p>
                 </div>
               </div>
-              {mostrarAlertaGit && (
-                <div className="mx-3 mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2">
-                  <p className="text-[9px] font-mono uppercase tracking-wider text-amber-500">Auto-push con fallo</p>
-                  <p className="text-[9px] text-muted-foreground mt-1 leading-relaxed break-words">
-                    {gitAutoPushStatus?.lastError}
-                  </p>
-                  <p className="text-[8px] text-muted-foreground/80 mt-1 uppercase tracking-wider">
-                    Ultimo push ok: {formatearUltimoPush()}
-                  </p>
-                </div>
-              )}
               {!usuario && (
                 <>
                   <button
