@@ -211,6 +211,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           <div className="flex flex-col items-center mb-8">
             <h1 className="text-xs sm:text-sm font-bold tracking-[0.25em] text-foreground text-center">PROYECTO FERIA DE CIENCIAS</h1>
             <p className="text-[9px] text-muted-foreground tracking-[0.2em] uppercase mt-1 font-mono">Autenticación de Dispositivo</p>
+            <p className="text-[7px] text-primary tracking-[0.15em] uppercase mt-1.5 font-mono font-bold">Modo Híbrido Criptográfico v2.2.1</p>
           </div>
 
           {/* Formulario */}
