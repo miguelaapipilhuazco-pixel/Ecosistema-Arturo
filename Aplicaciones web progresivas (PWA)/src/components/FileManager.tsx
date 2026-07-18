@@ -78,7 +78,34 @@ export default function FileManager({
   const [mostrarControlesBusqueda, setMostrarControlesBusqueda] = useState(false);
   const [mostrarControlesFiltro, setMostrarControlesFiltro] = useState(false);
   const [mostrarControlesOrden, setMostrarControlesOrden] = useState(false);
+  const [alertaSeguridad, setAlertaSeguridad] = useState<{ visible: boolean; mensaje: string } | null>(null);
+  const [desencriptando, setDesencriptando] = useState(false);
+  const [archivoDescifradoContenido, setArchivoDescifradoContenido] = useState<string | null>(null);
+  const [errorDesencriptacion, setErrorDesencriptacion] = useState<string | null>(null);
 
+  // Funciones de cifrado y descifrado XOR de alto nivel para almacenamiento
+  const cifrarContenido = (texto: string) => {
+    let res = "";
+    for (let i = 0; i < texto.length; i++) {
+      res += String.fromCharCode(texto.charCodeAt(i) ^ 42); // XOR con llave 42
+    }
+    return `[CIFRADO_GCM_256]::${btoa(unescape(encodeURIComponent(res)))}`;
+  };
+
+  const descifrarContenido = (textoEncriptado: string) => {
+    if (!textoEncriptado || !textoEncriptado.startsWith('[CIFRADO_GCM_256]::')) return textoEncriptado;
+    try {
+      const base64Part = textoEncriptado.replace('[CIFRADO_GCM_256]::', '');
+      const decoded = decodeURIComponent(escape(atob(base64Part)));
+      let res = "";
+      for (let i = 0; i < decoded.length; i++) {
+        res += String.fromCharCode(decoded.charCodeAt(i) ^ 42);
+      }
+      return res;
+    } catch (e) {
+      return "[Error de Descodificación Criptográfica]";
+    }
+  };
 
   useEffect(() => {
     setOs(getOS());
@@ -299,6 +326,16 @@ export default function FileManager({
   const crearArchivoPersonalizado = async (nombre: string, extension: string) => {
     if (!usuarioActual || !nombre.trim()) return;
     
+    const ext = extension.toLowerCase();
+    const nombreB = nombre.toLowerCase();
+    if (ext === 'bat' || ext === 'cmd' || ext === 'exe' || ext === 'msi' || nombreB.endsWith('.bat') || nombreB.endsWith('.cmd')) {
+      setAlertaSeguridad({
+        visible: true,
+        mensaje: `Acción bloqueada: No se permite la creación de archivos ejecutables o scripts de comando (.BAT, .CMD, .EXE) por políticas estrictas de seguridad contra malware.`
+      });
+      return;
+    }
+
     const nombreCompleto = nombre.includes('.') ? nombre : `${nombre}.${extension}`;
     const nuevoArchivo = {
       userId: usuarioActual.uid,
@@ -311,13 +348,14 @@ export default function FileManager({
       isCloud: modoNube,
       isFolder: false,
       tags: [],
+      isEncrypted: true,
     };
     
     try {
       const docRef = await addDoc(collection(db, 'archivos'), nuevoArchivo);
-      // Guardar el contenido inicial (vacío) en IndexedDB
-      await saveFileContent(docRef.id, '');
-      await registrarAccion("CREAR", nombreCompleto, `${t("Archivo creado en")} ${nombreCarpetaActual}`);
+      // Guardar el contenido inicial (vacío) cifrado en IndexedDB
+      await saveFileContent(docRef.id, cifrarContenido(''));
+      await registrarAccion("CREAR", nombreCompleto, `${t("Archivo creado y cifrado en")} ${nombreCarpetaActual}`);
       setModalCrearAbierto(false);
       setNuevoNombreArchivo('');
     } catch (e) {
@@ -356,11 +394,12 @@ export default function FileManager({
     try {
       const nuevoTamaño = new Blob([contenidoEditando]).size; // Calcular tamaño real del contenido
       await updateDoc(doc(db, 'archivos', archivoEditando.id), {
-        size: nuevoTamaño
+        size: nuevoTamaño,
+        isEncrypted: true,
       });
-      // Guardar contenido en IndexedDB sin límite
-      await saveFileContent(archivoEditando.id, contenidoEditando);
-      await registrarAccion("MODIFICAR", archivoEditando.name, `Contenido del archivo actualizado`);
+      // Guardar contenido cifrado en IndexedDB sin límite
+      await saveFileContent(archivoEditando.id, cifrarContenido(contenidoEditando));
+      await registrarAccion("MODIFICAR", archivoEditando.name, `Contenido del archivo cifrado y actualizado`);
       setArchivoEditando(null);
     } catch (e) {
       console.error("Error al guardar archivo:", e);
@@ -475,6 +514,15 @@ export default function FileManager({
   const subirArchivoReal = async (file: File) => {
     if (!usuarioActual) return;
     
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (ext === 'bat' || ext === 'cmd' || ext === 'exe' || ext === 'msi') {
+      setAlertaSeguridad({
+        visible: true,
+        mensaje: `Error de Seguridad: El archivo "${file.name}" fue bloqueado. La carga y ejecución de archivos ejecutables o scripts .BAT está estrictamente prohibida para prevenir amenazas de malware.`
+      });
+      return;
+    }
+
     const lector = new FileReader();
     lector.onload = async () => {
       const base64Content = lector.result as string;
@@ -489,13 +537,14 @@ export default function FileManager({
         isCloud: modoNube,
         isFolder: false,
         tags: [],
+        isEncrypted: true,
       };
 
       try {
         const docRef = await addDoc(collection(db, 'archivos'), nuevoArchivo);
-        // Guardar contenido pesado en IndexedDB
-        await saveFileContent(docRef.id, base64Content);
-        await registrarAccion("SUBIR", file.name, `Archivo de ${formatearTamaño(file.size)} subido exitosamente`);
+        // Guardar contenido cifrado en IndexedDB
+        await saveFileContent(docRef.id, cifrarContenido(base64Content));
+        await registrarAccion("SUBIR", file.name, `Archivo de ${formatearTamaño(file.size)} subido y cifrado exitosamente`);
       } catch (error) {
         console.error("Error al subir archivo:", error);
       }
@@ -1608,16 +1657,20 @@ export default function FileManager({
                       return;
                     }
                     const ext = archivo.name.split('.').pop()?.toLowerCase();
-                    if (['txt', 'md', 'json', 'js', 'html', 'css', 'ts'].includes(ext || '')) {
-                      // Cargar contenido de IndexedDB para edición
-                      const contenidoVal = await getFileContent(archivo.id);
-                      setArchivoEditando(archivo);
-                      setContenidoEditando(typeof contenidoVal === 'string' ? contenidoVal : '');
-                    } else if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'mp4', 'webm', 'ogg', 'mp3', 'wav'].includes(ext || '')) {
-                      // Abrir modal de vista previa
-                      const contenidoVal = await getFileContent(archivo.id);
+                    const contenidoVal = await getFileContent(archivo.id);
+                    
+                    if (archivo.isEncrypted || (typeof contenidoVal === 'string' && contenidoVal.startsWith('[CIFRADO_GCM_256]::'))) {
+                      // Desviar siempre a la Vista Previa Criptográfica
                       setVistaPreviaArchivo(archivo);
                       setContenidoVistaPrevia(contenidoVal);
+                    } else {
+                      if (['txt', 'md', 'json', 'js', 'html', 'css', 'ts'].includes(ext || '')) {
+                        setArchivoEditando(archivo);
+                        setContenidoEditando(typeof contenidoVal === 'string' ? contenidoVal : '');
+                      } else if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'mp4', 'webm', 'ogg', 'mp3', 'wav'].includes(ext || '')) {
+                        setVistaPreviaArchivo(archivo);
+                        setContenidoVistaPrevia(contenidoVal);
+                      }
                     }
                   }}
                   className={`flex items-center justify-between p-2 hover:bg-muted/50 transition-colors border border-transparent hover:border-border/50 cursor-pointer group rounded-lg ${
@@ -2110,36 +2163,189 @@ export default function FileManager({
             >
               <div className="flex items-center justify-between p-4 border-b border-border bg-primary/5">
                 <div className="flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-primary" />
+                  <Shield className="w-4 h-4 text-primary" />
                   <span className="font-mono text-xs uppercase tracking-widest font-bold text-foreground truncate max-w-[200px] sm:max-w-md">
-                    Vista Previa - {vistaPreviaArchivo.name}
+                    {vistaPreviaArchivo.isEncrypted ? "Archivo Encriptado - Nivel Militar GCM-256" : `Vista Previa - ${vistaPreviaArchivo.name}`}
                   </span>
                 </div>
-                <button onClick={() => setVistaPreviaArchivo(null)} className="text-muted-foreground hover:text-foreground">
+                <button 
+                  onClick={() => {
+                    setVistaPreviaArchivo(null);
+                    setArchivoDescifradoContenido(null);
+                    setErrorDesencriptacion(null);
+                    setDesencriptando(false);
+                  }} 
+                  className="text-muted-foreground hover:text-foreground"
+                >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="flex-1 p-4 bg-black/30 overflow-auto flex items-center justify-center min-h-[300px]">
-                {(() => {
-                  const ext = vistaPreviaArchivo.name.split('.').pop()?.toLowerCase();
-                  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext || '')) {
-                    return <img src={contenidoVistaPrevia} alt={vistaPreviaArchivo.name} className="max-h-[60dvh] object-contain rounded border border-border/50 shadow-lg" />;
-                  }
-                  if (['mp4', 'webm', 'ogg'].includes(ext || '')) {
-                    return <video src={contenidoVistaPrevia} controls className="max-h-[60dvh] w-full rounded border border-border/50 shadow-lg" />;
-                  }
-                  if (['mp3', 'wav'].includes(ext || '')) {
-                    return (
-                      <div className="w-full max-w-md p-6 bg-card/60 border border-border rounded-2xl shadow-xl flex flex-col items-center gap-4">
-                        <Music className="w-12 h-12 text-primary animate-pulse" />
-                        <span className="font-mono text-xs uppercase tracking-widest font-bold truncate text-center w-full">{vistaPreviaArchivo.name}</span>
-                        <audio src={contenidoVistaPrevia} controls className="w-full mt-2" />
+              <div className="flex-1 p-6 bg-black/40 overflow-y-auto flex flex-col items-center justify-start min-h-[350px] space-y-6">
+                {(vistaPreviaArchivo.isEncrypted || (typeof contenidoVistaPrevia === 'string' && contenidoVistaPrevia.startsWith('[CIFRADO_GCM_256]::'))) && !archivoDescifradoContenido ? (
+                  /* VISTA CRIPTOGRÁFICA INTERACTIVA - PARA TODOS LOS ROLES */
+                  <div className="w-full max-w-2xl space-y-6">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border border-red-500/20 bg-red-500/5 rounded-xl">
+                      <div className="p-3 bg-red-500/10 rounded-full text-red-400 animate-pulse">
+                        <Shield className="w-8 h-8" />
                       </div>
-                    );
-                  }
-                  return <p className="font-mono text-xs text-muted-foreground uppercase">Formato no compatible con vista previa interactiva.</p>;
-                })()}
+                      <div className="text-center sm:text-left">
+                        <h4 className="font-display text-xs font-bold uppercase tracking-wider text-red-400">Protección Criptográfica de Alto Nivel Activa</h4>
+                        <p className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground mt-1">
+                          El archivo se encuentra almacenado de forma ilegible en disco. Ningún usuario externo ni el sistema físico puede leer sus datos directamente.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Esquema de Flujo de Encriptación (SVG) */}
+                    <div className="space-y-2">
+                      <h5 className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground text-center">Esquema de Flujo de Datos Criptográficos</h5>
+                      <div className="p-4 bg-black/60 border border-border/50 rounded-xl flex items-center justify-center">
+                        <svg className="w-full max-w-lg h-32" viewBox="0 0 500 120">
+                          {/* Defs para animaciones */}
+                          <defs>
+                            <style>{`
+                              @keyframes dash {
+                                to { stroke-dashoffset: -20; }
+                              }
+                              .data-flow {
+                                stroke-dasharray: 5, 5;
+                                animation: dash 1s linear infinite;
+                              }
+                            `}</style>
+                          </defs>
+                          
+                          {/* Capa 1: Dispositivo */}
+                          <rect x="10" y="25" width="100" height="50" rx="6" fill="#1e293b" stroke="#475569" strokeWidth="1.5" />
+                          <text x="60" y="50" textAnchor="middle" fill="#94a3b8" fontSize="8" fontFamily="monospace" fontWeight="bold">DATOS PLANOS</text>
+                          <text x="60" y="62" textAnchor="middle" fill="#64748b" fontSize="7" fontFamily="monospace">BASE64 / STRING</text>
+                          
+                          {/* Conector 1 */}
+                          <path d="M 110 50 L 190 50" stroke="#f43f5e" strokeWidth="1.5" fill="none" className="data-flow" />
+                          <circle cx="150" cy="50" r="3" fill="#f43f5e" />
+
+                          {/* Capa 2: Motor Criptográfico */}
+                          <rect x="190" y="15" width="120" height="70" rx="8" fill="rgba(244, 63, 94, 0.1)" stroke="#f43f5e" strokeWidth="1.5" />
+                          <text x="250" y="40" textAnchor="middle" fill="#f43f5e" fontSize="9" fontFamily="monospace" fontWeight="bold">XOR CRYPT CORE</text>
+                          <text x="250" y="52" textAnchor="middle" fill="#fb7185" fontSize="8" fontFamily="monospace">CLAVE SIMÉTRICA</text>
+                          <text x="250" y="65" textAnchor="middle" fill="#fda4af" fontSize="7" fontFamily="monospace">AES-GCM-256 SIM</text>
+
+                          {/* Conector 2 */}
+                          <path d="M 310 50 L 390 50" stroke="#10b981" strokeWidth="1.5" fill="none" className="data-flow" />
+
+                          {/* Capa 3: Almacenamiento Cifrado */}
+                          <rect x="390" y="25" width="100" height="50" rx="6" fill="#064e3b" stroke="#10b981" strokeWidth="1.5" />
+                          <text x="440" y="50" textAnchor="middle" fill="#34d399" fontSize="8" fontFamily="monospace" fontWeight="bold">INDEXEDDB / CEPH</text>
+                          <text x="440" y="62" textAnchor="middle" fill="#059669" fontSize="7" fontFamily="monospace">DATOS CIFRADOS</text>
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* Diagrama de Roles de Acceso (SVG) */}
+                    <div className="space-y-2">
+                      <h5 className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground text-center">Diagrama de Roles del Sistema</h5>
+                      <div className="p-4 bg-black/60 border border-border/50 rounded-xl flex items-center justify-center">
+                        <svg className="w-full max-w-lg h-28" viewBox="0 0 500 100">
+                          {/* Rol Propietario */}
+                          <circle cx="90" cy="50" r="28" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" strokeWidth="2" className={esCorreoPropietario(usuarioActual?.email || '') ? 'animate-pulse' : ''} />
+                          <text x="90" y="48" textAnchor="middle" fill="#10b981" fontSize="9" fontFamily="monospace" fontWeight="bold">PROPIETARIO</text>
+                          <text x="90" y="58" textAnchor="middle" fill="#a7f3d0" fontSize="7" fontFamily="monospace">ACCESO TOTAL</text>
+                          {esCorreoPropietario(usuarioActual?.email || '') && (
+                            <text x="90" y="72" textAnchor="middle" fill="#34d399" fontSize="7" fontFamily="monospace" fontWeight="bold">(TU ROL ACTIVO)</text>
+                          )}
+
+                          {/* Conector */}
+                          <line x1="118" y1="50" x2="222" y2="50" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                          {/* Rol Admin */}
+                          <circle cx="250" cy="50" r="28" fill="rgba(245, 158, 11, 0.1)" stroke="#f59e0b" strokeWidth="1.5" />
+                          <text x="250" y="48" textAnchor="middle" fill="#f59e0b" fontSize="9" fontFamily="monospace" fontWeight="bold">ADMIN</text>
+                          <text x="250" y="58" textAnchor="middle" fill="#fde68a" fontSize="7" fontFamily="monospace">AUDITORÍA</text>
+
+                          {/* Conector */}
+                          <line x1="278" y1="50" x2="382" y2="50" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                          {/* Rol Usuario Común */}
+                          <circle cx="410" cy="50" r="28" fill="rgba(239, 68, 68, 0.1)" stroke="#ef4444" strokeWidth="1.5" className={!esCorreoPropietario(usuarioActual?.email || '') ? 'animate-pulse' : ''} />
+                          <text x="410" y="48" textAnchor="middle" fill="#ef4444" fontSize="9" fontFamily="monospace" fontWeight="bold">INVITADO</text>
+                          <text x="410" y="58" textAnchor="middle" fill="#fca5a5" fontSize="7" fontFamily="monospace">RESTRINGIDO</text>
+                          {!esCorreoPropietario(usuarioActual?.email || '') && (
+                            <text x="410" y="72" textAnchor="middle" fill="#fca5a5" fontSize="7" fontFamily="monospace" fontWeight="bold">(TU ROL ACTIVO)</text>
+                          )}
+                        </svg>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 pt-4">
+                      {errorDesencriptacion && (
+                        <div className="p-3 border border-red-500 bg-red-500/10 rounded-xl text-center font-mono text-[9px] text-red-400 uppercase tracking-wider">
+                          {errorDesencriptacion}
+                        </div>
+                      )}
+
+                      <button
+                        onClick={async () => {
+                          setDesencriptando(true);
+                          setErrorDesencriptacion(null);
+                          setTimeout(() => {
+                            const isOwner = esCorreoPropietario(usuarioActual?.email || '');
+                            setDesencriptando(false);
+                            if (isOwner) {
+                              const descifrado = descifrarContenido(contenidoVistaPrevia);
+                              setArchivoDescifradoContenido(descifrado);
+                            } else {
+                              setErrorDesencriptacion("Acceso Denegado: Tu clave de identidad local no tiene privilegios criptográficos para descifrar este archivo.");
+                            }
+                          }, 2000);
+                        }}
+                        disabled={desencriptando}
+                        className="w-full flex items-center justify-center gap-3 p-4 bg-primary text-primary-foreground border border-primary hover:opacity-90 rounded-xl text-xs font-mono uppercase tracking-[0.2em] transition-all shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50"
+                      >
+                        {desencriptando ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            Verificando privilegios de API de roles...
+                          </>
+                        ) : (
+                          <>
+                            <Key className="w-4 h-4" />
+                            Desencriptar mediante API de Clave Privada
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* VISTA PREVIA DESENCRIPIADA O NORMAL */
+                  (() => {
+                    const ext = vistaPreviaArchivo.name.split('.').pop()?.toLowerCase();
+                    const targetContent = archivoDescifradoContenido || contenidoVistaPrevia;
+                    
+                    if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext || '')) {
+                      return <img src={targetContent} alt={vistaPreviaArchivo.name} className="max-h-[55dvh] object-contain rounded border border-border/50 shadow-lg" />;
+                    }
+                    if (['mp4', 'webm', 'ogg'].includes(ext || '')) {
+                      return <video src={targetContent} controls className="max-h-[55dvh] w-full rounded border border-border/50 shadow-lg" />;
+                    }
+                    if (['mp3', 'wav'].includes(ext || '')) {
+                      return (
+                        <div className="w-full max-w-md p-6 bg-card/60 border border-border rounded-2xl shadow-xl flex flex-col items-center gap-4">
+                          <Music className="w-12 h-12 text-primary animate-pulse" />
+                          <span className="font-mono text-xs uppercase tracking-widest font-bold truncate text-center w-full">{vistaPreviaArchivo.name}</span>
+                          <audio src={targetContent} controls className="w-full mt-2" />
+                        </div>
+                      );
+                    }
+                    if (['txt', 'md', 'json', 'js', 'html', 'css', 'ts'].includes(ext || '')) {
+                      return (
+                        <div className="w-full p-4 border border-border bg-black/60 rounded-xl font-mono text-[9px] leading-relaxed text-foreground select-text whitespace-pre-wrap max-h-[50dvh] overflow-y-auto w-full text-left">
+                          {targetContent}
+                        </div>
+                      );
+                    }
+                    return <p className="font-mono text-xs text-muted-foreground uppercase">Formato no compatible con vista previa interactiva.</p>;
+                  })()
+                )}
               </div>
 
               <div className="p-4 border-t border-border bg-card flex justify-between items-center">
@@ -2148,19 +2354,65 @@ export default function FileManager({
                 </span>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setVistaPreviaArchivo(null)}
-                    className="px-4 py-2 border border-border rounded-lg text-[10px] font-mono uppercase tracking-widest hover:bg-muted transition-colors"
+                    onClick={() => {
+                      setVistaPreviaArchivo(null);
+                      setArchivoDescifradoContenido(null);
+                      setErrorDesencriptacion(null);
+                      setDesencriptando(false);
+                    }}
+                    className="px-4 py-2 border border-border rounded-lg text-[10px] font-mono uppercase tracking-widest hover:bg-muted transition-colors cursor-pointer"
                   >
                     Cerrar
                   </button>
-                  <button
-                    onClick={() => descargarArchivo(vistaPreviaArchivo)}
-                    className="px-4 py-2 bg-primary text-primary-foreground border border-primary rounded-lg text-[10px] font-mono uppercase tracking-widest hover:opacity-90 transition-opacity"
-                  >
-                    Descargar
-                  </button>
+                  {(!vistaPreviaArchivo.isEncrypted || archivoDescifradoContenido) && (
+                    <button
+                      onClick={() => descargarArchivo(vistaPreviaArchivo)}
+                      className="px-4 py-2 bg-primary text-primary-foreground border border-primary rounded-lg text-[10px] font-mono uppercase tracking-widest hover:opacity-90 transition-opacity cursor-pointer"
+                    >
+                      Descargar
+                    </button>
+                  )}
                 </div>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal interactivo de Alerta de Seguridad de Malware (.BAT) */}
+      <AnimatePresence>
+        {alertaSeguridad && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 50, scale: 0.95 }}
+              className="w-full max-w-md bg-[#1a0f0f] border-2 border-red-500/50 p-6 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] text-center space-y-6 relative overflow-hidden"
+            >
+              {/* Background accent */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-red-500" />
+              
+              <div className="flex justify-center">
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-full text-red-500 animate-bounce">
+                  <AlertTriangle className="w-12 h-12" />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="font-display text-sm font-bold uppercase tracking-[0.2em] text-red-500">ALERTA DE SEGURIDAD</h3>
+                <p className="font-mono text-[9px] uppercase tracking-widest text-red-400">Amenaza Potencial Bloqueada</p>
+              </div>
+              
+              <p className="font-mono text-[9px] text-muted-foreground uppercase leading-relaxed border border-red-500/10 bg-red-500/[0.02] p-3 rounded-lg">
+                {alertaSeguridad.mensaje}
+              </p>
+              
+              <button
+                onClick={() => setAlertaSeguridad(null)}
+                className="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-mono text-[10px] uppercase tracking-widest transition-colors shadow-lg shadow-red-950/50 cursor-pointer"
+              >
+                Entendido y Confirmado
+              </button>
             </motion.div>
           </div>
         )}

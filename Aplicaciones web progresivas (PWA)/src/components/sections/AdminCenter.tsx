@@ -28,7 +28,6 @@ type SubseccionAdmin =
   | 'almacenamiento' 
   | 'servidores' 
   | 'aplicaciones' 
-  | 'runtime' 
   | 'ia' 
   | 'red' 
   | 'seguridad' 
@@ -57,7 +56,6 @@ export default function AdminCenter({ alNavegar }: { alNavegar?: (id: any) => vo
     { id: 'almacenamiento', label: 'Almacenamiento', icon: Database, desc: 'Nodos, replicación e integridad' },
     { id: 'servidores', label: 'Servidores', icon: Server, desc: 'Nodos de procesamiento y estado' },
     { id: 'aplicaciones', label: 'Aplicaciones', icon: AppWindow, desc: 'Repositorio y despliegue' },
-    { id: 'runtime', label: 'Runtime', icon: Cpu, desc: 'Motores y rendimiento' },
     { id: 'ia', label: 'IA', icon: Bot, desc: 'Modelos, carga e inferencia' },
     { id: 'red', label: 'Red', icon: Globe, desc: 'Balanceadores, tráfico y latencia' },
     { id: 'seguridad', label: 'Seguridad', icon: Shield, desc: 'Firewall, ataques y auditoría' },
@@ -163,7 +161,6 @@ function renderizarSubseccion(id: SubseccionAdmin, t: any) {
     case 'ia': return <VistaIA t={t} />;
     case 'seguridad': return <VistaSeguridad t={t} />;
     case 'aplicaciones': return <VistaAplicaciones t={t} />;
-    case 'runtime': return <VistaRuntime t={t} />;
     case 'red': return <VistaRed t={t} />;
     case 'registros': return <VistaLogs t={t} />;
     case 'depuracion': return <VistaDepuracion t={t} />;
