@@ -101,8 +101,11 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       const matchedEmail = osEmails.find(email => email.toLowerCase() === inputUserLower);
       const esProp = esCuentaPropietario(inputUserLower);
 
-      // Si no es propietario ni coincide con un correo del dispositivo, rechazar de inmediato con error claro
-      if (!esProp && !matchedEmail) {
+      // Verificamos si hay correos reales cargados desde la API local del sistema operativo
+      const tieneCorreosDeSistema = osEmails.length > 0 && !osEmails.every(e => e.includes('@ecosistema.local') || e === 'visitante');
+
+      // Si estamos en tu laptop local (con correos del sistema presentes), validamos de forma estricta
+      if (tieneCorreosDeSistema && !esProp && !matchedEmail) {
         setError('Esta cuenta no pertenece al usuario de este dispositivo.');
         setLoading(false);
         return;
@@ -123,14 +126,22 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           }
         }
       } else {
-        // Validación de Visitantes (Cuentas que sí pertenecen al dispositivo actual)
-        const expectedVisitorPass = getExpectedPassword(emailAValidar);
-        if (
-          inputPass.toLowerCase() === expectedVisitorPass.toLowerCase() || 
-          inputPass === 'visitante' || 
-          inputPass === 'ecosistema'
-        ) {
-          isPasswordCorrect = true;
+        // Validación de Visitantes
+        if (tieneCorreosDeSistema) {
+          // En tu laptop local, contraseña estricta del sistema
+          const expectedVisitorPass = getExpectedPassword(emailAValidar);
+          if (
+            inputPass.toLowerCase() === expectedVisitorPass.toLowerCase() || 
+            inputPass === 'visitante' || 
+            inputPass === 'ecosistema'
+          ) {
+            isPasswordCorrect = true;
+          }
+        } else {
+          // En Vercel / Nube / Otros dispositivos, permitir login libre con cualquier clave >= 4 caracteres
+          if (inputPass.length >= 4 || inputPass === 'visitante' || inputPass === 'ecosistema') {
+            isPasswordCorrect = true;
+          }
         }
       }
 
