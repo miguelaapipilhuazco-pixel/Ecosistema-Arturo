@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layers, Eye, EyeOff } from 'lucide-react';
-import { auth } from '../lib/oss/auth';
+import { auth, vincularCuentaLocal } from '../lib/oss/auth';
 
 // =========================================================================
 // CONFIGURACIÓN DE SEGURIDAD LOCAL (PROPIETARIO)
@@ -96,7 +96,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
 
     setLoading(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const matchedEmail = osEmails.find(email => email.toLowerCase() === inputUser) || inputUser;
       let isPasswordCorrect = false;
 
@@ -138,8 +138,15 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           photoURL: null,
           providerData: [{ providerId: 'local' }]
         };
-        auth.currentUser = user;
-        localStorage.setItem('ecosystem_oss_auth_user', JSON.stringify(user));
+        
+        // Persistir el login en Firebase (accounts y device_links) para vincular la cuenta
+        try {
+          await vincularCuentaLocal(user);
+        } catch (err) {
+          console.error("Error al persistir vinculacion de cuenta en Firebase:", err);
+          auth.currentUser = user;
+          localStorage.setItem('ecosystem_oss_auth_user', JSON.stringify(user));
+        }
         
         onLoginSuccess();
         return;

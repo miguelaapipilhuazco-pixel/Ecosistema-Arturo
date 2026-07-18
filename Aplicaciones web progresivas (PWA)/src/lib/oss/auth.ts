@@ -214,3 +214,17 @@ export async function signOut(_auth: typeof auth): Promise<void> {
   saveAuthUser(null);
   notifyAuth(null);
 }
+
+export async function vincularCuentaLocal(user: User): Promise<void> {
+  auth.currentUser = user;
+  saveAuthUser(user);
+  await persistAccount(user, 'local');
+  await addDoc(collection(db, 'device_links'), {
+    deviceId: getDeviceId(),
+    userId: user.uid,
+    email: user.email,
+    providerId: 'local',
+    linkedAt: Date.now(),
+  });
+  notifyAuth(user);
+}
