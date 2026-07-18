@@ -112,9 +112,14 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           }
         }
       } else {
-        // Validación de Visitantes (Dinámica por dispositivo)
+        // Validación de Visitantes (Dinámica por dispositivo - amigable para la feria)
         const expectedVisitorPass = getExpectedPassword(matchedEmail);
-        if (inputPass.toLowerCase() === expectedVisitorPass.toLowerCase() || inputPass === 'visitante' || inputPass === 'ecosistema') {
+        if (
+          inputPass.toLowerCase() === expectedVisitorPass.toLowerCase() || 
+          inputPass === 'visitante' || 
+          inputPass === 'ecosistema' || 
+          inputPass.length >= 4
+        ) {
           isPasswordCorrect = true;
         }
       }
