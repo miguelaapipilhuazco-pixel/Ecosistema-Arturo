@@ -97,10 +97,21 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     setLoading(true);
 
     setTimeout(async () => {
-      const matchedEmail = osEmails.find(email => email.toLowerCase() === inputUser) || inputUser;
+      const inputUserLower = inputUser.toLowerCase();
+      const matchedEmail = osEmails.find(email => email.toLowerCase() === inputUserLower);
+      const esProp = esCuentaPropietario(inputUserLower);
+
+      // Si no es propietario ni coincide con un correo del dispositivo, rechazar de inmediato con error claro
+      if (!esProp && !matchedEmail) {
+        setError('Esta cuenta no pertenece al usuario de este dispositivo.');
+        setLoading(false);
+        return;
+      }
+
+      const emailAValidar = matchedEmail || inputUser;
       let isPasswordCorrect = false;
 
-      if (esCuentaPropietario(matchedEmail)) {
+      if (esCuentaPropietario(emailAValidar)) {
         // Validación del Propietario (Tú)
         if (CONTRASEÑA_PROPIETARIO === 'CAMBIA_ESTO_POR_TU_CONTRASEÑA') {
           if (inputPass === 'arturo123' || inputPass.length >= 4) {
@@ -112,13 +123,12 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           }
         }
       } else {
-        // Validación de Visitantes (Dinámica por dispositivo - amigable para la feria)
-        const expectedVisitorPass = getExpectedPassword(matchedEmail);
+        // Validación de Visitantes (Cuentas que sí pertenecen al dispositivo actual)
+        const expectedVisitorPass = getExpectedPassword(emailAValidar);
         if (
           inputPass.toLowerCase() === expectedVisitorPass.toLowerCase() || 
           inputPass === 'visitante' || 
-          inputPass === 'ecosistema' || 
-          inputPass.length >= 4
+          inputPass === 'ecosistema'
         ) {
           isPasswordCorrect = true;
         }
@@ -128,13 +138,13 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         if (rememberMe) {
           localStorage.setItem('ecosystem_logged_in', 'true');
         }
-        localStorage.setItem('ecosystem_current_user', matchedEmail);
+        localStorage.setItem('ecosystem_current_user', emailAValidar);
         
         // Crear y guardar el usuario de sesión real de forma local
         const user = {
           uid: `user_${Date.now()}`,
-          email: matchedEmail,
-          displayName: matchedEmail.split('@')[0].replace(/[._\-]+/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase()),
+          email: emailAValidar,
+          displayName: emailAValidar.split('@')[0].replace(/[._\-]+/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase()),
           photoURL: null,
           providerData: [{ providerId: 'local' }]
         };
