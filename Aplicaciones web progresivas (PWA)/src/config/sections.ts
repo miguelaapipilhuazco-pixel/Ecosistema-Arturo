@@ -35,7 +35,7 @@ import type { Seccion } from '../types';
 export const SECTIONS: Seccion[] = [
   { id: 'espacios', titulo: 'Carpetas', icono: 'Folder', descripcion: 'Contextos y proyectos', barraLateral: true },
   { id: 'inicio', titulo: 'Inicio', icono: 'Home', descripcion: 'Panel principal', barraLateral: true },
-  { id: 'maquina-virtual', titulo: 'RUNTIME', icono: 'Play', descripcion: 'Universal compatibility engine', barraLateral: true },
+  { id: 'maquina-virtual', titulo: 'RUNTIME', icono: 'Play', descripcion: 'Motor de compatibilidad universal', barraLateral: true },
 
   { id: 'buscar', titulo: 'Buscar', icono: 'Search', descripcion: 'Busqueda inteligente', barraLateral: false },
   { id: 'sincronizacion', titulo: 'Sincronizacion', icono: 'RefreshCw', descripcion: 'ENLACE PROYECTO', barraLateral: false },

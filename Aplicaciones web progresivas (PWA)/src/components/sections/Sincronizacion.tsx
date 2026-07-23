@@ -581,7 +581,7 @@ export default function Sincronizacion({ arturoLinkActivo, onToggleArturoLink, a
                         <div className="flex items-center gap-3">
                           <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-muted-foreground/30'}`} />
                           <span className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground">
-                            {isOnline ? 'ONLINE' : 'OFFLINE'}
+                            {isOnline ? 'EN LINEA' : 'FUERA DE LINEA'}
                           </span>
                           {!isMe && (
                             <button

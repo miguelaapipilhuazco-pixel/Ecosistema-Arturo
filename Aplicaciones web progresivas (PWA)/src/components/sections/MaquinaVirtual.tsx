@@ -285,7 +285,7 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
     },
     {
       title: 'Ollama Local',
-      desc: 'Open Source AI Runtime',
+      desc: 'Motor de IA de código abierto',
       logo: OllamaLogo,
       deviceIcon: Bot,
       os: ['windows', 'linux', 'macos', 'android'],
@@ -296,7 +296,7 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
     },
     {
       title: 'Wolvic',
-      desc: 'VR Browser',
+      desc: 'Navegador para realidad virtual',
       logo: WolvicLogo,
       deviceIcon: Glasses,
       os: ['android'],
@@ -308,7 +308,7 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
     },
     {
       title: 'Quest Browser',
-      desc: 'Meta WebXR Entry',
+      desc: 'Acceso WebXR de Meta',
       logo: QuestBrowserLogo,
       deviceIcon: Glasses,
       os: ['android'],
@@ -320,7 +320,7 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
     },
     {
       title: 'Google Play Store',
-      desc: 'Android App Store',
+      desc: 'Tienda de aplicaciones Android',
       logo: GooglePlayLogo,
       deviceIcon: Smartphone,
       os: ['android'],
@@ -332,7 +332,7 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
     },
     {
       title: 'Apple App Store',
-      desc: 'iOS & macOS App Store',
+      desc: 'Tienda de apps para iOS y macOS',
       logo: AppStoreLogo,
       deviceIcon: Smartphone,
       os: ['ios', 'macos'],
@@ -344,7 +344,7 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
     },
     {
       title: 'Meta Quest Store',
-      desc: 'Meta VR & MR Store',
+      desc: 'Tienda VR y MR de Meta',
       logo: MetaStoreLogo,
       deviceIcon: Glasses,
       os: ['android'],
@@ -356,7 +356,7 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
     },
     {
       title: 'Microsoft Store',
-      desc: 'Windows Desktop Store',
+      desc: 'Tienda de escritorio para Windows',
       logo: MicrosoftStoreLogo,
       deviceIcon: Monitor,
       os: ['windows'],
@@ -368,7 +368,7 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
     },
     {
       title: 'Flathub Store',
-      desc: 'Linux App Repository',
+      desc: 'Repositorio de aplicaciones Linux',
       logo: FlathubLogo,
       deviceIcon: Monitor,
       os: ['linux'],

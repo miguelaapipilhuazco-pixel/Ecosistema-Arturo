@@ -61,7 +61,7 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
   const esPropietario = esCorreoPropietario(correoLocal);
   const etiquetaSesion = usuario
     ? (dispositivoCompartido ? `Equipo compartido: ${nombreEquipoReal || 'desconocido'}` : `Equipo: ${nombreEquipoReal || 'desconocido'}`)
-    : 'Offline';
+    : 'Desconectado';
 
   useEffect(() => {
     setOs(getOS());
@@ -327,7 +327,7 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
           <div className="flex items-center gap-3 mb-10">
             <div className="flex flex-col">
               <h1 className="text-xs font-bold tracking-[0.3em] uppercase leading-none">Ecosistema</h1>
-              <span className="text-[8px] font-mono tracking-widest text-muted-foreground uppercase mt-1">Ecosystem v2.5</span>
+              <span className="text-[8px] font-mono tracking-widest text-muted-foreground uppercase mt-1">Ecosistema v2.5</span>
             </div>
           </div>
 
@@ -366,7 +366,7 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
                 className="w-full flex items-center gap-3 p-2 rounded-xl border border-border/50 hover:bg-muted transition-colors relative"
               >
                 <img 
-                  src={usuario?.photoURL || "https://ui-avatars.com/api/?name=Guest&background=random&color=fff"} 
+                  src={usuario?.photoURL || "https://ui-avatars.com/api/?name=Invitado&background=random&color=fff"} 
                   alt="Perfil" 
                   className="w-8 h-8 rounded-full object-cover border border-border/50 bg-primary/10"
                 />
@@ -391,7 +391,7 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
               className="flex items-center gap-2 p-1 rounded-full border border-border/50 hover:bg-muted transition-colors"
             >
               <img 
-                src={usuario?.photoURL || "https://ui-avatars.com/api/?name=Guest&background=random&color=fff"} 
+                src={usuario?.photoURL || "https://ui-avatars.com/api/?name=Invitado&background=random&color=fff"} 
                 alt="Perfil" 
                 className="w-8 h-8 rounded-full object-cover border border-border/50 bg-primary/10"
               />
@@ -405,7 +405,7 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
             <div className="absolute top-16 right-4 lg:top-auto lg:right-auto lg:bottom-24 lg:left-4 w-64 rounded-xl border border-border bg-background/95 backdrop-blur-xl shadow-2xl z-[60] overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 lg:slide-in-from-bottom-2 duration-200">
               <div className="px-4 py-3 border-b border-border/50 mb-2 flex items-center gap-3">
                 <img 
-                  src={usuario?.photoURL || "https://ui-avatars.com/api/?name=Guest&background=random&color=fff"} 
+                  src={usuario?.photoURL || "https://ui-avatars.com/api/?name=Invitado&background=random&color=fff"} 
                   alt="Perfil" 
                   className="w-10 h-10 rounded-full object-cover border border-border/50 bg-primary/10 shrink-0"
                 />

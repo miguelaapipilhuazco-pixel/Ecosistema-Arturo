@@ -183,7 +183,7 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-20">
             <Bot className="w-12 h-12 mb-4 text-primary" />
-            <h3 className="text-sm uppercase tracking-[0.2em] mb-2 font-bold">AI Intelligence Core</h3>
+            <h3 className="text-sm uppercase tracking-[0.2em] mb-2 font-bold">Nucleo de inteligencia IA</h3>
             <p className="text-[10px] max-w-[250px] leading-relaxed">Modelo Ollama optimizado localmente para el Ecosistema. Soberania total de datos activa.</p>
           </div>
         )}
@@ -191,7 +191,7 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] p-3.5 rounded-2xl border ${m.role === 'user' ? 'bg-primary text-primary-foreground border-primary/20 rounded-tr-none' : 'bg-muted border-border rounded-tl-none'}`}>
               <div className="flex items-center gap-2 mb-1 opacity-50">
-                <span className="text-[8px] uppercase font-bold tracking-widest">{m.role === 'user' ? 'Guest' : 'Ollama-Local'}</span>
+                <span className="text-[8px] uppercase font-bold tracking-widest">{m.role === 'user' ? 'Invitado' : 'Ollama-Local'}</span>
               </div>
               <p className="text-xs leading-relaxed whitespace-pre-wrap">{m.content}</p>
             </div>
@@ -201,7 +201,7 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
           <div className="flex justify-start">
             <div className="max-w-[85%] p-3.5 rounded-2xl border bg-muted border-border rounded-tl-none">
               <div className="flex items-center gap-2 mb-1 opacity-50">
-                <span className="text-[8px] uppercase font-bold tracking-widest">Ollama-Local (Generando...)</span>
+                <span className="text-[8px] uppercase font-bold tracking-widest">Ollama-Local (Generando respuesta...)</span>
               </div>
               <p className="text-xs leading-relaxed whitespace-pre-wrap">{streamingContent}</p>
               <span className="inline-block w-1.5 h-4 bg-primary animate-pulse ml-1 align-middle" />

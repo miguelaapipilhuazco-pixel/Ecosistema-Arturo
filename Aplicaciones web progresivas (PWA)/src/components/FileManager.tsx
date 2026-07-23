@@ -2245,32 +2245,43 @@ export default function FileManager({
                     <div className="space-y-2">
                       <h5 className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground text-center">Diagrama de Roles del Sistema</h5>
                       <div className="p-4 bg-black/60 border border-border/50 rounded-xl flex items-center justify-center">
-                        <svg className="w-full max-w-lg h-28" viewBox="0 0 500 100">
+                        <svg className="w-full max-w-lg h-28" viewBox="0 0 460 100">
                           {/* Rol Propietario */}
-                          <circle cx="90" cy="50" r="28" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" strokeWidth="2" className={esCorreoPropietario(usuarioActual?.email || '') ? 'animate-pulse' : ''} />
-                          <text x="90" y="48" textAnchor="middle" fill="#10b981" fontSize="9" fontFamily="monospace" fontWeight="bold">PROPIETARIO</text>
-                          <text x="90" y="58" textAnchor="middle" fill="#a7f3d0" fontSize="7" fontFamily="monospace">ACCESO TOTAL</text>
+                          <circle cx="55" cy="50" r="28" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" strokeWidth="2" className={esCorreoPropietario(usuarioActual?.email || '') ? 'animate-pulse' : ''} />
+                          <text x="55" y="48" textAnchor="middle" fill="#10b981" fontSize="8" fontFamily="monospace" fontWeight="bold">PROPIETARIO</text>
+                          <text x="55" y="58" textAnchor="middle" fill="#a7f3d0" fontSize="6.5" fontFamily="monospace">ACCESO TOTAL</text>
                           {esCorreoPropietario(usuarioActual?.email || '') && (
-                            <text x="90" y="72" textAnchor="middle" fill="#34d399" fontSize="7" fontFamily="monospace" fontWeight="bold">(TU ROL ACTIVO)</text>
+                            <text x="55" y="72" textAnchor="middle" fill="#34d399" fontSize="6.5" fontFamily="monospace" fontWeight="bold">(TU ROL ACTIVO)</text>
                           )}
 
-                          {/* Conector */}
-                          <line x1="118" y1="50" x2="222" y2="50" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,3" />
+                          {/* Conector 1 */}
+                          <line x1="83" y1="50" x2="117" y2="50" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3" />
 
                           {/* Rol Admin */}
-                          <circle cx="250" cy="50" r="28" fill="rgba(245, 158, 11, 0.1)" stroke="#f59e0b" strokeWidth="1.5" />
-                          <text x="250" y="48" textAnchor="middle" fill="#f59e0b" fontSize="9" fontFamily="monospace" fontWeight="bold">ADMIN</text>
-                          <text x="250" y="58" textAnchor="middle" fill="#fde68a" fontSize="7" fontFamily="monospace">AUDITORÍA</text>
+                          <circle cx="145" cy="50" r="28" fill="rgba(245, 158, 11, 0.1)" stroke="#f59e0b" strokeWidth="1.5" />
+                          <text x="145" y="48" textAnchor="middle" fill="#f59e0b" fontSize="8" fontFamily="monospace" fontWeight="bold">ADMIN</text>
+                          <text x="145" y="58" textAnchor="middle" fill="#fde68a" fontSize="6.5" fontFamily="monospace">AUDITORÍA</text>
 
-                          {/* Conector */}
-                          <line x1="278" y1="50" x2="382" y2="50" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,3" />
+                          {/* Conector 2 */}
+                          <line x1="173" y1="50" x2="207" y2="50" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3" />
 
-                          {/* Rol Usuario Común */}
-                          <circle cx="410" cy="50" r="28" fill="rgba(239, 68, 68, 0.1)" stroke="#ef4444" strokeWidth="1.5" className={!esCorreoPropietario(usuarioActual?.email || '') ? 'animate-pulse' : ''} />
-                          <text x="410" y="48" textAnchor="middle" fill="#ef4444" fontSize="9" fontFamily="monospace" fontWeight="bold">INVITADO</text>
-                          <text x="410" y="58" textAnchor="middle" fill="#fca5a5" fontSize="7" fontFamily="monospace">RESTRINGIDO</text>
-                          {!esCorreoPropietario(usuarioActual?.email || '') && (
-                            <text x="410" y="72" textAnchor="middle" fill="#fca5a5" fontSize="7" fontFamily="monospace" fontWeight="bold">(TU ROL ACTIVO)</text>
+                          {/* Rol Nodo IoT */}
+                          <circle cx="235" cy="50" r="28" fill="rgba(6, 182, 212, 0.1)" stroke="#06b6d4" strokeWidth="1.5" className={(usuarioActual?.email?.includes('device-') || usuarioActual?.email?.includes('@ecosistema.local')) ? 'animate-pulse' : ''} />
+                          <text x="235" y="48" textAnchor="middle" fill="#06b6d4" fontSize="8" fontFamily="monospace" fontWeight="bold">NODO IoT</text>
+                          <text x="235" y="58" textAnchor="middle" fill="#a5f3fc" fontSize="6.5" fontFamily="monospace">TELEMETRÍA</text>
+                          {(usuarioActual?.email?.includes('device-') || usuarioActual?.email?.includes('@ecosistema.local')) && (
+                            <text x="235" y="72" textAnchor="middle" fill="#22d3ee" fontSize="6.5" fontFamily="monospace" fontWeight="bold">(TU ROL ACTIVO)</text>
+                          )}
+
+                          {/* Conector 3 */}
+                          <line x1="263" y1="50" x2="377" y2="50" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3" />
+
+                          {/* Rol Invitado */}
+                          <circle cx="405" cy="50" r="28" fill="rgba(239, 68, 68, 0.1)" stroke="#ef4444" strokeWidth="1.5" className={(!esCorreoPropietario(usuarioActual?.email || '') && !usuarioActual?.email?.includes('device-') && !usuarioActual?.email?.includes('@ecosistema.local')) ? 'animate-pulse' : ''} />
+                          <text x="405" y="48" textAnchor="middle" fill="#ef4444" fontSize="8" fontFamily="monospace" fontWeight="bold">INVITADO</text>
+                          <text x="405" y="58" textAnchor="middle" fill="#fca5a5" fontSize="6.5" fontFamily="monospace">RESTRINGIDO</text>
+                          {(!esCorreoPropietario(usuarioActual?.email || '') && !usuarioActual?.email?.includes('device-') && !usuarioActual?.email?.includes('@ecosistema.local')) && (
+                            <text x="405" y="72" textAnchor="middle" fill="#fca5a5" fontSize="6.5" fontFamily="monospace" fontWeight="bold">(TU ROL ACTIVO)</text>
                           )}
                         </svg>
                       </div>
