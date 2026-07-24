@@ -135,7 +135,18 @@ function ConsoleMonitor({ app, onExit }: { app: any; onExit: () => void }) {
   const [cpu, setCpu] = useState(15);
   const [ram, setRam] = useState(1.4);
   const [logs, setLogs] = useState<string[]>([]);
+  const [esVertical, setEsVertical] = useState(false);
+  const [ignorarGiro, setIgnorarGiro] = useState(false);
   const IconoApp = app.logo || Terminal;
+
+  useEffect(() => {
+    const verificarOrientacion = () => {
+      setEsVertical(window.innerHeight > window.innerWidth && window.innerWidth < 1024);
+    };
+    verificarOrientacion();
+    window.addEventListener('resize', verificarOrientacion);
+    return () => window.removeEventListener('resize', verificarOrientacion);
+  }, []);
 
   useEffect(() => {
     setLogs([
