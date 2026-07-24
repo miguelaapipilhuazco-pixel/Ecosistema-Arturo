@@ -232,6 +232,10 @@ async function pushAndPull() {
   if (scope.mode === 'custom' && scope.collections.length === 0) {
     return;
   }
+  const pairingKey = getSyncPairingKey();
+  if (!pairingKey) {
+    return; // Retornar de forma silenciosa si no hay clave configurada
+  }
   const token = await ensureSessionToken(backendUrl, currentUser.uid, deviceId);
   const endpoint = `${backendUrl.replace(/\/$/, '')}/api/oss-sync/push`;
   const localData = readDb();
