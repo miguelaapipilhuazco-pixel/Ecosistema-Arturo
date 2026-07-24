@@ -56,7 +56,7 @@ type TipoVista = 'apps' | 'runtimes' | 'user';
 
 export default function MaquinaVirtual({ onLaunch, appActiva }: { onLaunch: (app: any) => void, appActiva: any | null }) {
   const { t } = useTranslation();
-  const [vistaActiva, setVistaActiva] = useState<TipoVista | 'vms'>('apps');
+  const [vistaActiva, setVistaActiva] = useState<TipoVista | 'vms'>('vms');
   const [os, setOs] = useState<OS>('unknown');
 
   useEffect(() => {
@@ -716,7 +716,11 @@ function VistaMaquinasVirtuales({ t }: any) {
   };
 
   useEffect(() => {
-    void cargarVms();
+    const autoIniciar = async () => {
+      await cargarVms();
+      iniciarVm({ isUniversal: true });
+    };
+    void autoIniciar();
   }, []);
 
   useEffect(() => {
