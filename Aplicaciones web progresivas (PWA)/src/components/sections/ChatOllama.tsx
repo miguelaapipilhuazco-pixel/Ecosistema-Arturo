@@ -6,7 +6,11 @@ const OllamaLogo = () => (
   <img src="https://cdn.simpleicons.org/ollama" className="w-5 h-5 shrink-0" alt="Ollama" />
 );
 
-export default function ChatOllama({ onExit }: { onExit: () => void }) {
+const AntigravityLogo = () => (
+  <img src="https://cdn.simpleicons.org/googlegemini/8E78FF" className="w-5 h-5 shrink-0" alt="Antigravity" />
+);
+
+export default function ChatOllama({ onExit, agent = 'ollama' }: { onExit: () => void; agent?: 'ollama' | 'antigravity' }) {
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,9 +25,9 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
     
     const statsInterval = setInterval(() => {
       setStats({
-        vram: (7.2 + Math.random() * 0.4).toFixed(1),
-        tps: (24 + Math.floor(Math.random() * 12)).toString(),
-        temp: (45 + Math.floor(Math.random() * 5)).toString()
+        vram: agent === 'antigravity' ? '12.0' : (7.2 + Math.random() * 0.4).toFixed(1),
+        tps: (agent === 'antigravity' ? 45 : 24) + Math.floor(Math.random() * 12) + "",
+        temp: (agent === 'antigravity' ? 38 : 45) + Math.floor(Math.random() * 5) + ""
       });
     }, 3000);
 
@@ -31,7 +35,7 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
       clearTimeout(timer);
       clearInterval(statsInterval);
     };
-  }, []);
+  }, [agent]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -41,9 +45,25 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
 
   const generarRespuestaLocal = (prompt: string) => {
     const base = prompt.trim();
-    if (!base) return 'Nucleo local activo.';
+    if (!base) return agent === 'antigravity' ? 'Antigravity Core activo.' : 'Nucleo local activo.';
 
     const lower = base.toLowerCase();
+    if (agent === 'antigravity') {
+      if (lower.includes('hola')) {
+        return 'Hola. Soy Antigravity, tu asistente cognitivo premium. ¿En qué te puedo ayudar hoy dentro del Ecosistema?';
+      }
+      if (lower.includes('almacenamiento') || lower.includes('capacidad') || lower.includes('cifrado') || lower.includes('cifrar')) {
+        return 'Modelo Criptográfico activo: los archivos se resguardan de forma local en IndexedDB y nube en Firestore bajo cifrado simétrico [CIFRADO_GCM_256].';
+      }
+      if (lower.includes('quien eres') || lower.includes('quién eres')) {
+        return 'Soy Antigravity, la inteligencia de acompañamiento cognitivo y pair programming del Ecosistema Arturo, diseñada con tecnología de Google DeepMind.';
+      }
+      if (lower.includes('sincronizacion') || lower.includes('sincronizar')) {
+        return 'La sincronización delta-sync en la nube se encuentra activa. Al subir cualquier archivo a tu carpeta, se replica de forma segura a Firebase.';
+      }
+      return `Antigravity Core en línea. Procesando consulta de desarrollo: "${base}". El backend de streaming asimétrico no está en línea en este puerto, pero mis funciones cognitivas locales están listas.`;
+    }
+
     if (lower.includes('hola')) {
       return 'Hola. Ollama Local esta operativo en modo local de contingencia.';
     }
@@ -67,7 +87,7 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
 
     try {
       const historyParam = JSON.stringify(messages);
-      const url = `/api/chat/stream?message=${encodeURIComponent(userMsg)}&history=${encodeURIComponent(historyParam)}`;
+      const url = `/api/chat/stream?message=${encodeURIComponent(userMsg)}&history=${encodeURIComponent(historyParam)}&agent=${agent}`;
       
       const eventSource = new EventSource(url);
       let fullResponse = '';
@@ -100,13 +120,11 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
         }
       };
 
-      eventSource.onerror = (err) => {
-        console.error("EventSource failed:", err);
+      eventSource.onerror = () => {
         eventSource.close();
-        setLoading(false);
         setMessages(prev => [...prev, { role: 'assistant', content: generarRespuestaLocal(userMsg) }]);
+        setLoading(false);
       };
-
     } catch (e) {
       setMessages(prev => [...prev, { role: 'assistant', content: generarRespuestaLocal(userMsg) }]);
       setLoading(false);
@@ -118,7 +136,7 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
       <div className="fixed inset-x-0 top-14 bottom-20 lg:inset-y-0 lg:left-64 lg:right-0 z-[9999] bg-black flex flex-col items-center justify-center font-mono p-6 border-l border-border/50">
         <div className="w-full max-w-md space-y-4">
           <div className="flex items-center gap-4 mb-8">
-            <OllamaLogo />
+            {agent === 'antigravity' ? <AntigravityLogo /> : <OllamaLogo />}
             <div className="h-0.5 flex-1 bg-zinc-800 relative overflow-hidden">
               <motion.div 
                 className="absolute inset-0 bg-primary"
@@ -129,8 +147,8 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
             </div>
           </div>
           <div className="space-y-2 text-[10px] uppercase tracking-widest text-zinc-500">
-            <p className="animate-pulse">Iniciando motor AI Core...</p>
-            <p className="opacity-60">Cargando modelo: ollama/llama3</p>
+            <p className="animate-pulse">{agent === 'antigravity' ? 'Inicializando Antigravity Engine...' : 'Iniciando motor AI Core...'}</p>
+            <p className="opacity-60">{agent === 'antigravity' ? 'Cargando modelo cognitivo: Antigravity v3.0' : 'Cargando modelo: ollama/llama3'}</p>
             <p className="opacity-40">Verificando aceleración CUDA/Vulkan...</p>
             <p className="opacity-20">Optimizando KV Cache para Ecosistema...</p>
           </div>
@@ -144,17 +162,19 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
       <div className="flex items-center justify-between p-3 border-b border-border bg-card backdrop-blur-xl">
         <div className="flex items-center gap-3 pl-2">
           <div className="p-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20">
-            <OllamaLogo />
+            {agent === 'antigravity' ? <AntigravityLogo /> : <OllamaLogo />}
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="font-display text-sm tracking-widest uppercase text-foreground leading-none">Ollama Local</span>
+              <span className="font-display text-sm tracking-widest uppercase text-foreground leading-none">{agent === 'antigravity' ? 'Antigravity AI' : 'Ollama Local'}</span>
               <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
                 <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[7px] font-mono text-emerald-500 uppercase font-bold">Local</span>
+                <span className="text-[7px] font-mono text-emerald-500 uppercase font-bold">{agent === 'antigravity' ? 'Cognitive' : 'Local'}</span>
               </div>
             </div>
-            <span className="text-[8px] font-mono text-muted-foreground uppercase mt-1">v2.5.0-AR / GGUF-INT4 / OLLAMA-BACKEND</span>
+            <span className="text-[8px] font-mono text-muted-foreground uppercase mt-1">
+              {agent === 'antigravity' ? 'v3.0.0-AGY / DEEPMIND-CORE / GEMINI-STREAM' : 'v2.5.0-AR / GGUF-INT4 / OLLAMA-BACKEND'}
+            </span>
           </div>
         </div>
 
@@ -183,15 +203,17 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-20">
             <Bot className="w-12 h-12 mb-4 text-primary" />
-            <h3 className="text-sm uppercase tracking-[0.2em] mb-2 font-bold">Nucleo de inteligencia IA</h3>
-            <p className="text-[10px] max-w-[250px] leading-relaxed">Modelo Ollama optimizado localmente para el Ecosistema. Soberania total de datos activa.</p>
+            <h3 className="text-sm uppercase tracking-[0.2em] mb-2 font-bold">{agent === 'antigravity' ? 'Antigravity Asistente' : 'Nucleo de inteligencia IA'}</h3>
+            <p className="text-[10px] max-w-[250px] leading-relaxed">
+              {agent === 'antigravity' ? 'Asistente cognitivo inteligente del Ecosistema. Modelo avanzado con soporte completo de desarrollo.' : 'Modelo Ollama optimizado localmente para el Ecosistema. Soberania total de datos activa.'}
+            </p>
           </div>
         )}
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] p-3.5 rounded-2xl border ${m.role === 'user' ? 'bg-primary text-primary-foreground border-primary/20 rounded-tr-none' : 'bg-muted border-border rounded-tl-none'}`}>
               <div className="flex items-center gap-2 mb-1 opacity-50">
-                <span className="text-[8px] uppercase font-bold tracking-widest">{m.role === 'user' ? 'Invitado' : 'Ollama-Local'}</span>
+                <span className="text-[8px] uppercase font-bold tracking-widest">{m.role === 'user' ? 'Invitado' : (agent === 'antigravity' ? 'Antigravity' : 'Ollama-Local')}</span>
               </div>
               <p className="text-xs leading-relaxed whitespace-pre-wrap">{m.content}</p>
             </div>
@@ -201,7 +223,9 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
           <div className="flex justify-start">
             <div className="max-w-[85%] p-3.5 rounded-2xl border bg-muted border-border rounded-tl-none">
               <div className="flex items-center gap-2 mb-1 opacity-50">
-                <span className="text-[8px] uppercase font-bold tracking-widest">Ollama-Local (Generando respuesta...)</span>
+                <span className="text-[8px] uppercase font-bold tracking-widest">
+                  {agent === 'antigravity' ? 'Antigravity (Pensando...)' : 'Ollama-Local (Generando respuesta...)'}
+                </span>
               </div>
               <p className="text-xs leading-relaxed whitespace-pre-wrap">{streamingContent}</p>
               <span className="inline-block w-1.5 h-4 bg-primary animate-pulse ml-1 align-middle" />
@@ -224,7 +248,7 @@ export default function ChatOllama({ onExit }: { onExit: () => void }) {
           <div className="flex items-center gap-2">
             <input 
               type="text" 
-              placeholder="Envía un prompt al motor AI..."
+              placeholder={agent === 'antigravity' ? 'Pregúntale a Antigravity...' : 'Envía un prompt al motor AI...'}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}

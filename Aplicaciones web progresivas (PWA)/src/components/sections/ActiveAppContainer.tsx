@@ -62,10 +62,10 @@ export default function ActiveAppContainer({ app, onExit, visible }: ActiveAppCo
     );
   }
 
-  if (app.launchType === 'chat' || app.title === 'Ollama Local') {
+  if (app.launchType === 'chat' || app.title === 'Ollama Local' || app.title === 'Antigravity') {
     return (
       <div className={visible ? 'flex' : 'hidden'}>
-        <ChatOllama onExit={onExit} />
+        <ChatOllama onExit={onExit} agent={app.title === 'Antigravity' ? 'antigravity' : 'ollama'} />
       </div>
     );
   }
