@@ -272,15 +272,15 @@ function VistaBibliotecaAplicaciones({ t, onLaunch }: { t: any, onLaunch: (app: 
 
   const todasLasAplicaciones = [
     {
-      title: 'Neko Browser',
-      desc: 'Navegador Virtual WebRTC',
+      title: 'Brave Browser',
+      desc: 'Navegador Web Seguro e Inteligente',
       logo: BraveLogo,
       deviceIcon: Monitor,
       os: ['windows', 'linux', 'macos', 'android'],
       showOnVR: false,
       status: 'Disponible',
       launchType: 'web',
-      url: 'https://neko-virtual.onrender.com',
+      url: 'https://search.brave.com',
       runtimeType: 'app'
     },
     {
