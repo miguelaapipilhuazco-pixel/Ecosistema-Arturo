@@ -4,7 +4,7 @@ import {
   Folder, FileText, Image as ImageIcon, Video, Music, Download, Monitor, Gamepad2, 
   AppWindow, Box, Layers, Briefcase, GraduationCap, Building2, User, 
   Cpu, Users, Star, Trash2, Archive, ChevronRight, File, Plus, Share2, Cloud,
-  Move, Copy, Scissors, Clipboard, Type, Tag, History, Search, Filter, SortAsc, Eye, Radio, Clock, X, Apple, Terminal, Smartphone, Shield
+  Move, Copy, Scissors, Clipboard, Type, Tag, History, Search, Filter, SortAsc, Eye, Radio, Clock, X, Apple, Terminal, Smartphone, Shield, HardDrive
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { db, auth, manejarErrorDatos, TipoAccionDatos } from '../lib/core';
@@ -1457,32 +1457,67 @@ export default function FileManager({
       </AnimatePresence>
 
       {!carpetaActiva ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {categorias.map((cat, i) => (
-            <button 
-              key={i} 
-              onClick={() => {
-                setCarpetaActiva(cat.id);
-                setSubcarpetaActiva(null); // Limpiar subcarpeta al cambiar de categoría
-              }}
-              className="ecosystem-card p-4 flex items-center justify-between group hover:border-primary/50 transition-all bg-card/40 backdrop-blur-md relative overflow-hidden text-left"
-            >
-              <div className="relative z-10 flex flex-col gap-1">
-                <h3 className="font-display font-medium uppercase tracking-[0.2em] text-[11px] text-foreground group-hover:text-primary transition-colors">
-                  {cat.name}
-                </h3>
-                <p className="font-mono text-[8px] text-muted-foreground uppercase tracking-[0.1em] opacity-60">
-                  {t("Ver archivos")}
-                </p>
+        <div className="space-y-6 text-left">
+          {/* 1. Sección de Dispositivos y Unidades (Look de Windows 11) */}
+          {modoNube && (
+            <div className="space-y-3">
+              <h4 className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/80 font-bold border-b border-border/50 pb-1">
+                Dispositivos y unidades (1)
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <button
+                  onClick={() => {
+                    setCarpetaActiva('documentos');
+                    setSubcarpetaActiva(null);
+                  }}
+                  className="ecosystem-card p-4 flex items-center gap-4 hover:border-primary/50 transition-all bg-card/30 backdrop-blur-md relative overflow-hidden text-left group"
+                >
+                  <HardDrive className="w-10 h-10 text-primary shrink-0 group-hover:scale-105 transition-transform" />
+                  <div className="min-w-0 flex-1">
+                    <h5 className="font-display font-bold uppercase tracking-wider text-[10px] text-foreground group-hover:text-primary transition-colors">
+                      Arturo Cloud Drive (Z:)
+                    </h5>
+                    {/* Barra de progreso de espacio */}
+                    <div className="w-full bg-zinc-800 h-2 rounded-full mt-2 overflow-hidden border border-zinc-900">
+                      <div className="bg-sky-500 h-full w-[14%]" />
+                    </div>
+                    <p className="font-mono text-[7px] text-muted-foreground uppercase tracking-widest mt-1.5">
+                      142 GB ocupados de 1.00 TB
+                    </p>
+                  </div>
+                </button>
               </div>
+            </div>
+          )}
 
-              <div className="relative z-10 flex items-center gap-3">
-              </div>
-
-              {/* Decorative background icon */}
-              <cat.icon className="absolute -right-4 -bottom-4 w-20 h-20 text-primary/5 group-hover:text-primary/10 transition-all rotate-12 pointer-events-none" strokeWidth={1} />
-            </button>
-          ))}
+          {/* 2. Carpetas de Sistema */}
+          <div className="space-y-3">
+            <h4 className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/80 font-bold border-b border-border/50 pb-1">
+              Carpetas de sistema ({categorias.length})
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {categorias.map((cat, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => {
+                    setCarpetaActiva(cat.id);
+                    setSubcarpetaActiva(null);
+                  }}
+                  className="ecosystem-card p-4 flex items-center justify-between group hover:border-primary/50 transition-all bg-card/40 backdrop-blur-md relative overflow-hidden text-left"
+                >
+                  <div className="relative z-10 flex flex-col gap-1">
+                    <h3 className="font-display font-medium uppercase tracking-[0.2em] text-[11px] text-foreground group-hover:text-primary transition-colors">
+                      {cat.name}
+                    </h3>
+                    <p className="font-mono text-[8px] text-muted-foreground uppercase tracking-[0.1em] opacity-60">
+                      {t("Ver archivos")}
+                    </p>
+                  </div>
+                  <cat.icon className="absolute -right-4 -bottom-4 w-20 h-20 text-primary/5 group-hover:text-primary/10 transition-all rotate-12 pointer-events-none" strokeWidth={1} />
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
         <motion.div 
