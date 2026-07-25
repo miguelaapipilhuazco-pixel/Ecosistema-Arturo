@@ -1167,26 +1167,6 @@ export default function FileManager({
     <div className="flex flex-row w-full h-full gap-4 text-left select-none relative pb-20 sm:pb-0 min-h-[500px]">
       {/* 1. Panel de Navegación Lateral Izquierdo (Estilo Windows 11) */}
       <aside className="hidden md:flex flex-col w-48 shrink-0 border-r border-border/40 pr-4 py-2 space-y-4">
-        {/* Sección Inicio / Galería */}
-        <div className="space-y-1">
-          <button 
-            onClick={() => { setCarpetaActiva(null); setSubcarpetaActiva(null); }}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all ${!carpetaActiva ? 'bg-primary/15 text-primary border border-primary/20 font-bold shadow-md' : 'text-zinc-400 hover:bg-muted/30 hover:text-zinc-200 border border-transparent'}`}
-          >
-            <Home className="w-3.5 h-3.5" />
-            <span>Inicio</span>
-          </button>
-          <button 
-            onClick={() => { setCarpetaActiva('imagenes'); setSubcarpetaActiva(null); }}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all ${carpetaActiva === 'imagenes' ? 'bg-primary/15 text-primary border border-primary/20 font-bold shadow-md' : 'text-zinc-400 hover:bg-muted/30 hover:text-zinc-200 border border-transparent'}`}
-          >
-            <ImageIcon className="w-3.5 h-3.5" />
-            <span>Galería</span>
-          </button>
-        </div>
-
-        <div className="border-t border-border/40 my-2" />
-
         {/* Sección Carpetas Ancladas */}
         <div className="space-y-1">
           {[
@@ -1530,10 +1510,10 @@ export default function FileManager({
                     </h5>
                     {/* Barra de progreso de espacio */}
                     <div className="w-full bg-zinc-800 h-2 rounded-full mt-2 overflow-hidden border border-zinc-900">
-                      <div className="bg-sky-500 h-full w-[14%]" />
+                      <div className="bg-sky-500 h-full w-[0.01%]" />
                     </div>
                     <p className="font-mono text-[7px] text-muted-foreground uppercase tracking-widest mt-1.5">
-                      142 GB ocupados de 1.00 TB
+                      142 GB ocupados de 1.00 EB
                     </p>
                   </div>
                 </button>
