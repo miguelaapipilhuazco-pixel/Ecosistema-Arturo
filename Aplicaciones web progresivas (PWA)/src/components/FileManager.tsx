@@ -1177,41 +1177,8 @@ export default function FileManager({
   })();
 
   return (
-    <div className="flex flex-row w-full h-full gap-4 text-left select-none relative pb-20 sm:pb-0 min-h-[500px]">
-      {/* 1. Panel de Navegación Lateral Izquierdo (Estilo Windows 11) */}
-      <aside className="hidden md:flex flex-col w-48 shrink-0 border-r border-border/40 pr-4 py-2 space-y-4">
-        {/* Sección Carpetas Ancladas */}
-        <div className="space-y-1">
-          {[
-            { id: 'proyectos', name: 'Escritorio', icon: Monitor },
-            { id: 'papelera', name: 'Descargas', icon: Download },
-            { id: 'documentos', name: 'Documentos', icon: FileText },
-            { id: 'imagenes', name: 'Imágenes', icon: ImageIcon },
-            { id: 'musica', name: 'Música', icon: Music },
-            { id: 'videos', name: 'Videos', icon: Video },
-          ].map((item) => {
-            const IconComp = item.icon;
-            const activo = carpetaActiva === item.id;
-            return (
-              <button 
-                key={item.id}
-                onClick={() => { setCarpetaActiva(item.id); setSubcarpetaActiva(null); }}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all group ${activo ? 'bg-primary/15 text-primary border border-primary/20 font-bold shadow-md' : 'text-zinc-400 hover:bg-muted/30 hover:text-zinc-200 border border-transparent'}`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <IconComp className="w-3.5 h-3.5" />
-                  <span>{item.name}</span>
-                </div>
-                <span className="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">📌</span>
-              </button>
-            );
-          })}
-        </div>
-      </aside>
-
-      {/* 2. Área del Contenido Principal */}
-      <div className="flex-1 min-w-0 flex flex-col gap-6">
-        {!hideHeader && (
+    <div className="space-y-6 relative pb-20 sm:pb-0 min-h-[500px]">
+      {!hideHeader && (
         !carpetaActiva ? (
           <header className="border-b border-border/50 pb-8 flex flex-row items-center gap-4 mb-8">
             {onBack && (
@@ -2656,7 +2623,6 @@ export default function FileManager({
           </div>
         )}
       </AnimatePresence>
-      </div>
     </div>
   );
 }
