@@ -230,17 +230,34 @@ export default function FileManager({
     }
   };
 
+  const esCorreoPropietario = (email: string) => {
+    const OWNER_EMAILS = [
+      'miguela.apipilhuazco@hotmail.com',
+      'miguelaarrioja@hotmail.com',
+      'miguelarrioja@hotmail.com',
+      'miguela.apipilhuazco@gmail.com'
+    ];
+    const OWNER_ALIASES = ['miguela.apipilhuazco', 'miguelaarrioja', 'miguelarrioja'];
+    const normalizedEmail = email.trim().toLowerCase();
+    return OWNER_EMAILS.includes(normalizedEmail) || OWNER_ALIASES.some((alias) => normalizedEmail.startsWith(alias));
+  };
+
   const categorias = modoNube
     ? [
         { id: 'cloud_library', name: 'Biblioteca Nube', icon: Cloud },
+        { id: 'documentos', name: t('Documentos'), icon: FileText },
+        { id: 'imagenes', name: t('Imágenes'), icon: ImageIcon },
+        { id: 'videos', name: t('Videos'), icon: Video },
+        { id: 'musica', name: t('Música'), icon: Music },
+        { id: 'proyectos', name: t('Proyectos'), icon: Layers },
         { id: 'favoritos', name: t('Favoritos'), icon: Star },
+        { id: 'papelera', name: t('Papelera'), icon: Trash2 },
       ]
     : [
         { id: 'documentos', name: t('Documentos'), icon: FileText },
         { id: 'imagenes', name: t('Imágenes'), icon: ImageIcon },
         { id: 'videos', name: t('Videos'), icon: Video },
         { id: 'musica', name: t('Música'), icon: Music },
-        { id: 'ia', name: t('IA'), icon: Cpu },
         { id: 'proyectos', name: t('Proyectos'), icon: Layers },
         { id: 'favoritos', name: t('Favoritos'), icon: Star },
         { id: 'papelera', name: t('Papelera'), icon: Trash2 },
@@ -1073,13 +1090,16 @@ export default function FileManager({
         ];
 
         // Restringir accesos para usuarios invitados
-        const esAdmin = usuarioActual?.email === 'miguela.apipilhuazco@gmail.com';
+        const esAdmin = esCorreoPropietario(usuarioActual?.email || '');
         if (!esAdmin) {
           itemsRaw = itemsRaw.filter(item => {
             const name = String(item.name || '').toLowerCase();
+            const id = String(item.id || '').toLowerCase();
             return !name.includes('vs code') && 
                    !name.includes('visual studio code') && 
-                   !name.includes('antigravity');
+                   !name.includes('antigravity') &&
+                   !id.includes('vscode') &&
+                   !id.includes('antigravity');
           });
         }
       } else if (carpetaActiva === 'favoritos') {
