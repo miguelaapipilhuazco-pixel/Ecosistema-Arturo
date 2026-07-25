@@ -244,22 +244,20 @@ export default function FileManager({
 
   const categorias = modoNube
     ? [
-        { id: 'documentos', name: t('Documentos'), icon: FileText },
-        { id: 'imagenes', name: t('Imágenes'), icon: ImageIcon },
-        { id: 'videos', name: t('Videos'), icon: Video },
-        { id: 'musica', name: t('Música'), icon: Music },
-        { id: 'proyectos', name: t('Proyectos'), icon: Layers },
-        { id: 'favoritos', name: t('Favoritos'), icon: Star },
-        { id: 'papelera', name: t('Papelera'), icon: Trash2 },
+        { id: 'proyectos', name: 'Escritorio', icon: Monitor },
+        { id: 'papelera', name: 'Descargas', icon: Download },
+        { id: 'documentos', name: 'Documentos', icon: FileText },
+        { id: 'imagenes', name: 'Imágenes', icon: ImageIcon },
+        { id: 'musica', name: 'Música', icon: Music },
+        { id: 'videos', name: 'Videos', icon: Video },
       ]
     : [
-        { id: 'documentos', name: t('Documentos'), icon: FileText },
-        { id: 'imagenes', name: t('Imágenes'), icon: ImageIcon },
-        { id: 'videos', name: t('Videos'), icon: Video },
-        { id: 'musica', name: t('Música'), icon: Music },
-        { id: 'proyectos', name: t('Proyectos'), icon: Layers },
-        { id: 'favoritos', name: t('Favoritos'), icon: Star },
-        { id: 'papelera', name: t('Papelera'), icon: Trash2 },
+        { id: 'proyectos', name: 'Escritorio', icon: Monitor },
+        { id: 'papelera', name: 'Descargas', icon: Download },
+        { id: 'documentos', name: 'Documentos', icon: FileText },
+        { id: 'imagenes', name: 'Imágenes', icon: ImageIcon },
+        { id: 'musica', name: 'Música', icon: Music },
+        { id: 'videos', name: 'Videos', icon: Video },
       ];
 
   const categoriaActiva = categorias.find((categoria) => categoria.id === carpetaActiva) || null;
