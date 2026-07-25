@@ -1179,7 +1179,7 @@ export default function FileManager({
   })();
 
   return (
-    <div className="space-y-6 relative pb-20 sm:pb-0 min-h-[500px]">
+    <div className="space-y-6 relative pb-20 sm:pb-0 min-h-[500px] overflow-visible">
       {!hideHeader && (
         !carpetaActiva ? (
           <header className="border-b border-border/50 pb-8 flex flex-row items-center gap-4 mb-8">
@@ -1639,7 +1639,7 @@ export default function FileManager({
           </div>
 
           {/* Barra de Acciones del Toolbar - Estilo Windows 11 */}
-          <div className="flex flex-wrap items-center gap-1 p-1 bg-zinc-950/60 border border-zinc-800 rounded-xl mb-4 relative z-50">
+          <div className="flex flex-wrap items-center gap-1 p-1 bg-zinc-950/60 border border-zinc-800 rounded-xl mb-4 relative z-[9999] overflow-visible">
             {/* 1. Botón NUEVO con menú desplegable */}
             <div className="relative">
               <button
@@ -1651,7 +1651,7 @@ export default function FileManager({
                 <span className="text-[7px] opacity-60">▼</span>
               </button>
               {activeDropdown === 'nuevo' && (
-                <div className="absolute left-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5">
+                <div className="absolute left-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5 z-[9999]">
                   <button
                     onClick={() => { setModalCrearAbierto(true); setNuevoTipoArchivo('folder'); setActiveDropdown(null); }}
                     className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
@@ -1768,7 +1768,7 @@ export default function FileManager({
                 <span className="text-[7px] opacity-60">▼</span>
               </button>
               {activeDropdown === 'ordenar' && (
-                <div className="absolute left-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5">
+                <div className="absolute left-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5 z-[9999]">
                   {(['nombre', 'tamaño', 'fecha'] as const).map((crit) => (
                     <button
                       key={crit}
@@ -1801,7 +1801,7 @@ export default function FileManager({
                 <span className="text-[7px] opacity-60">▼</span>
               </button>
               {activeDropdown === 'ver' && (
-                <div className="absolute left-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5">
+                <div className="absolute left-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5 z-[9999]">
                   <button
                     onClick={() => { setFiltroTipo('todos'); setActiveDropdown(null); }}
                     className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg"
@@ -1836,7 +1836,7 @@ export default function FileManager({
                 <span className="font-bold text-xs tracking-tighter">•••</span>
               </button>
               {activeDropdown === 'mas' && (
-                <div className="absolute right-0 mt-1.5 w-48 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5">
+                <div className="absolute right-0 mt-1.5 w-48 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5 z-[9999]">
                   <button
                     onClick={() => { setMostrarControlesBusqueda(!mostrarControlesBusqueda); setActiveDropdown(null); }}
                     className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
