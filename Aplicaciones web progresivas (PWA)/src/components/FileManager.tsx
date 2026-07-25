@@ -78,6 +78,7 @@ export default function FileManager({
   const [mostrarControlesBusqueda, setMostrarControlesBusqueda] = useState(false);
   const [mostrarControlesFiltro, setMostrarControlesFiltro] = useState(false);
   const [mostrarControlesOrden, setMostrarControlesOrden] = useState(false);
+  const [modalCephAbierto, setModalCephAbierto] = useState(false);
   const [alertaSeguridad, setAlertaSeguridad] = useState<{ visible: boolean; mensaje: string } | null>(null);
   const [desencriptando, setDesencriptando] = useState(false);
   const [archivoDescifradoContenido, setArchivoDescifradoContenido] = useState<string | null>(null);
@@ -1039,6 +1040,9 @@ export default function FileManager({
         }
         break;
       }
+      case 'ceph_monitor':
+        setModalCephAbierto(true);
+        break;
       case 'search':
         setMostrarControlesBusqueda(!mostrarControlesBusqueda);
         break;
@@ -1061,7 +1065,10 @@ export default function FileManager({
     { id: 'new', icon: Plus, label: t('Crear') },
     { id: 'search', icon: Search, label: t('Buscar') },
     { id: 'sync', icon: Radio, label: t('Sincronizar'), active: estaSincronizando },
-    ...(modoNube ? [{ id: 'import_pc', icon: Download, label: 'Importar desde PC' }] : []),
+    ...(modoNube ? [
+      { id: 'import_pc', icon: Download, label: 'Importar desde PC' },
+      { id: 'ceph_monitor', icon: Cpu, label: 'Monitor Ceph' }
+    ] : []),
     { id: 'filter', icon: Filter, label: t('Filtrar') },
     { id: 'move', icon: Move, label: t('Mover') },
     { id: 'copy', icon: Copy, label: t('Copiar') },
@@ -2528,6 +2535,122 @@ export default function FileManager({
                 className="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-mono text-[10px] uppercase tracking-widest transition-colors shadow-lg shadow-red-950/50 cursor-pointer"
               >
                 Entendido y Confirmado
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Interactivo de Ceph Storage Monitor */}
+      <AnimatePresence>
+        {modalCephAbierto && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 50, scale: 0.95 }}
+              className="w-full max-w-2xl bg-zinc-950 border border-zinc-800 p-6 rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.15)] flex flex-col space-y-6 relative overflow-hidden"
+            >
+              {/* Green active bar */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500 animate-pulse" />
+              
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping" />
+                  <h3 className="font-display text-xs font-bold uppercase tracking-[0.25em] text-emerald-400">
+                    Ceph Distributed Storage Monitor
+                  </h3>
+                </div>
+                <button 
+                  onClick={() => setModalCephAbierto(false)} 
+                  className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Status metrics grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 bg-zinc-900/60 border border-zinc-800 rounded-xl space-y-1">
+                  <p className="font-mono text-[7px] text-zinc-500 uppercase tracking-widest">Estado del Clúster</p>
+                  <p className="font-display text-emerald-400 font-black text-xs tracking-wider animate-pulse">HEALTH_OK</p>
+                </div>
+                <div className="p-3 bg-zinc-900/60 border border-zinc-800 rounded-xl space-y-1">
+                  <p className="font-mono text-[7px] text-zinc-500 uppercase tracking-widest">Nodos OSD (Discos)</p>
+                  <p className="font-display text-white font-bold text-xs tracking-widest">48 / 48 ONLINE</p>
+                </div>
+                <div className="p-3 bg-zinc-900/60 border border-zinc-800 rounded-xl space-y-1">
+                  <p className="font-mono text-[7px] text-zinc-500 uppercase tracking-widest">Algoritmo Activo</p>
+                  <p className="font-display text-sky-400 font-bold text-xs tracking-widest">CRUSH MAP v4</p>
+                </div>
+              </div>
+
+              {/* RADOS Cluster topology schema (SVG) */}
+              <div className="p-4 bg-zinc-900/40 border border-zinc-900 rounded-xl flex flex-col items-center justify-center space-y-2">
+                <p className="font-mono text-[7px] text-zinc-500 uppercase tracking-widest">Topología de Datos RADOS (1.00 EB total)</p>
+                
+                <svg className="w-full max-w-md h-32" viewBox="0 0 400 120">
+                  <defs>
+                    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.8" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Nodes Connections (Lineas) */}
+                  <line x1="200" y1="20" x2="80" y2="70" stroke="url(#lineGrad)" strokeWidth="1" className="opacity-60" />
+                  <line x1="200" y1="20" x2="320" y2="70" stroke="url(#lineGrad)" strokeWidth="1" className="opacity-60" />
+                  <line x1="80" y1="70" x2="140" y2="100" stroke="#4b5563" strokeWidth="1" />
+                  <line x1="80" y1="70" x2="260" y2="100" stroke="#4b5563" strokeWidth="1" />
+                  <line x1="320" y1="70" x2="260" y2="100" stroke="#4b5563" strokeWidth="1" />
+                  <line x1="320" y1="70" x2="140" y2="100" stroke="#4b5563" strokeWidth="1" />
+
+                  {/* MON Node */}
+                  <circle cx="200" cy="20" r="14" fill="#0f172a" stroke="#10b981" strokeWidth="1.5" />
+                  <text x="200" y="23" textAnchor="middle" fill="#10b981" fontSize="6.5" fontFamily="monospace" fontWeight="bold">MONs (3)</text>
+
+                  {/* MGR Node */}
+                  <circle cx="80" cy="70" r="12" fill="#0f172a" stroke="#06b6d4" strokeWidth="1.5" />
+                  <text x="80" y="73" textAnchor="middle" fill="#06b6d4" fontSize="6" fontFamily="monospace" fontWeight="bold">MGR</text>
+
+                  {/* RGW Node */}
+                  <circle cx="320" cy="70" r="12" fill="#0f172a" stroke="#f59e0b" strokeWidth="1.5" />
+                  <text x="320" y="73" textAnchor="middle" fill="#f59e0b" fontSize="6" fontFamily="monospace" fontWeight="bold">RGW</text>
+
+                  {/* OSD Nodes (Storage Nodes) */}
+                  <rect x="115" y="90" width="50" height="20" rx="3" fill="#18181b" stroke="#3f3f46" strokeWidth="1" />
+                  <text x="140" y="102" textAnchor="middle" fill="#a1a1aa" fontSize="6.5" fontFamily="monospace">OSD-NODE 1</text>
+
+                  <rect x="235" y="90" width="50" height="20" rx="3" fill="#18181b" stroke="#3f3f46" strokeWidth="1" />
+                  <text x="260" y="102" textAnchor="middle" fill="#a1a1aa" fontSize="6.5" fontFamily="monospace">OSD-NODE 2</text>
+                </svg>
+              </div>
+
+              {/* Placement groups state & replication details */}
+              <div className="space-y-3 font-mono text-[9px] uppercase tracking-widest text-muted-foreground bg-zinc-900/30 p-4 border border-zinc-900 rounded-xl leading-relaxed">
+                <div className="flex justify-between border-b border-zinc-800 pb-1.5">
+                  <span>Grupo de Ubicación (PGs)</span>
+                  <span className="text-emerald-400 font-bold">512 active+clean</span>
+                </div>
+                <div className="flex justify-between border-b border-zinc-800 pb-1.5">
+                  <span>Regla de Réplica</span>
+                  <span className="text-white">x3 (Tres copias distribuidas)</span>
+                </div>
+                <div className="flex justify-between border-b border-zinc-800 pb-1.5">
+                  <span>Capacidad en Uso</span>
+                  <span className="text-white">{formatearTamaño(tamañoOcupadoReal)} de 1.00 EB (Exabyte)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Dirección del clúster</span>
+                  <span className="text-sky-400 lowercase">ceph://cluster.ecosistema.arturo:8000</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setModalCephAbierto(false)}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-mono text-[10px] uppercase tracking-widest transition-colors shadow-lg shadow-emerald-950/50 cursor-pointer"
+              >
+                Cerrar Monitor de Salud
               </button>
             </motion.div>
           </div>
