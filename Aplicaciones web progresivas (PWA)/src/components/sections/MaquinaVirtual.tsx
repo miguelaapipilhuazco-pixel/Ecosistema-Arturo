@@ -124,9 +124,14 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
     }
   ];
 
+  const bootIniciado = useRef(false);
+
   // Iniciar con la Terminal de QEMU abierta y bootéando
   useEffect(() => {
     abrirVentana('terminal');
+    
+    if (bootIniciado.current) return;
+    bootIniciado.current = true;
     
     const runBoot = async () => {
       setFaseSimulacion('booting');
