@@ -244,7 +244,6 @@ export default function FileManager({
 
   const categorias = modoNube
     ? [
-        { id: 'cloud_library', name: 'Biblioteca Nube', icon: Cloud },
         { id: 'documentos', name: t('Documentos'), icon: FileText },
         { id: 'imagenes', name: t('Imágenes'), icon: ImageIcon },
         { id: 'videos', name: t('Videos'), icon: Video },
