@@ -121,22 +121,9 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
     }
   ];
 
-  // Iniciar con la Terminal de QEMU abierta y bootéando por defecto
-  const [ventanas, setVentanas] = useState<Ventana[]>([
-    {
-      id: 'terminal',
-      alias: 'terminal',
-      titulo: 'Terminal KVM',
-      logo: Terminal,
-      x: 80,
-      y: 60,
-      ancho: 550,
-      alto: 380,
-      minimizada: false,
-      maximizada: false
-    }
-  ]);
-  const [zIndices, setZIndices] = useState<string[]>(['terminal']);
+  // Iniciar con el escritorio limpio por defecto
+  const [ventanas, setVentanas] = useState<Ventana[]>([]);
+  const [zIndices, setZIndices] = useState<string[]>([]);
   const [faseSimulacion, setFaseSimulacion] = useState<'booting' | 'terminal'>('booting');
   const [logsSimulados, setLogsSimulados] = useState<string[]>([]);
   const [cmdInput, setCmdInput] = useState('');
