@@ -79,6 +79,8 @@ export default function FileManager({
   const [mostrarControlesFiltro, setMostrarControlesFiltro] = useState(false);
   const [mostrarControlesOrden, setMostrarControlesOrden] = useState(false);
   const [modalCephAbierto, setModalCephAbierto] = useState(false);
+  const [itemSeleccionado, setItemSeleccionado] = useState<any | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<'nuevo' | 'ordenar' | 'ver' | 'mas' | null>(null);
   const [alertaSeguridad, setAlertaSeguridad] = useState<{ visible: boolean; mensaje: string } | null>(null);
   const [desencriptando, setDesencriptando] = useState(false);
   const [archivoDescifradoContenido, setArchivoDescifradoContenido] = useState<string | null>(null);
@@ -1636,30 +1638,283 @@ export default function FileManager({
             </div>
           </div>
 
-          {/* Barra de Acciones del Toolbar */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-muted/20 border border-border/30 rounded-xl mb-4">
-            {todasLasAcciones.map((acc) => {
-              const disabled = acc.id === 'paste' && !clipboard;
-              const Icon = acc.icon;
-              const isActive = 
-                (acc.id === 'search' && mostrarControlesBusqueda) ||
-                (acc.id === 'filter' && mostrarControlesFiltro) ||
-                (acc.id === 'sort' && mostrarControlesOrden);
-              
-              return (
-                <button
-                  key={acc.id}
-                  onClick={() => manejarAccion(acc.id)}
-                  disabled={disabled}
-                  className={`px-3 py-1.5 rounded-lg border text-[9px] font-mono uppercase tracking-widest flex items-center gap-1.5 transition-all ${
-                    disabled ? 'opacity-30 cursor-not-allowed' : 'hover:border-primary/50 hover:text-primary'
-                  } ${isActive ? 'border-primary text-primary bg-primary/15 font-bold shadow-md shadow-primary/5' : 'border-border/50 bg-background/40'}`}
-                >
-                  <Icon className="w-3 h-3" />
-                  <span className="hidden md:inline">{acc.label}</span>
-                </button>
-              );
-            })}
+          {/* Barra de Acciones del Toolbar - Estilo Windows 11 */}
+          <div className="flex flex-wrap items-center gap-1 p-1 bg-zinc-950/60 border border-zinc-800 rounded-xl mb-4 relative z-50">
+            {/* 1. Botón NUEVO con menú desplegable */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === 'nuevo' ? null : 'nuevo')}
+                className="px-3 py-1.5 rounded-lg border border-border/40 hover:border-primary/50 text-[9px] font-mono uppercase tracking-widest flex items-center gap-1.5 bg-background/40 hover:text-primary transition-all"
+              >
+                <Plus className="w-3.5 h-3.5 text-primary" />
+                <span>Nuevo</span>
+                <span className="text-[7px] opacity-60">▼</span>
+              </button>
+              {activeDropdown === 'nuevo' && (
+                <div className="absolute left-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5">
+                  <button
+                    onClick={() => { setModalCrearAbierto(true); setNuevoTipoArchivo('folder'); setActiveDropdown(null); }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
+                  >
+                    <Folder className="w-3.5 h-3.5 text-yellow-500" />
+                    <span>Carpeta</span>
+                  </button>
+                  <button
+                    onClick={() => { setModalCrearAbierto(true); setNuevoTipoArchivo('txt'); setActiveDropdown(null); }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-zinc-400" />
+                    <span>Doc de Texto</span>
+                  </button>
+                  <button
+                    onClick={() => { setModalCrearAbierto(true); setNuevoTipoArchivo('md'); setActiveDropdown(null); }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-primary" />
+                    <span>Doc Markdown</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="w-px h-5 bg-zinc-800 mx-1" />
+
+            {/* 2. Operaciones de Edición Rápidas (Iconos compactos) */}
+            <button
+              disabled={!itemSeleccionado}
+              onClick={() => {
+                if (itemSeleccionado) {
+                  setClipboard({ archivo: itemSeleccionado, modo: 'cortar' });
+                  void registrarAccion("CORTAR", itemSeleccionado.name, `Archivo listo para cortar`);
+                }
+              }}
+              title="Cortar (Ctrl+X)"
+              className={`p-1.5 rounded-lg border border-transparent transition-all ${
+                itemSeleccionado ? 'hover:border-zinc-800 hover:bg-zinc-900 text-zinc-300' : 'opacity-30 cursor-not-allowed text-zinc-600'
+              }`}
+            >
+              <Scissors className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              disabled={!itemSeleccionado}
+              onClick={() => {
+                if (itemSeleccionado) {
+                  setClipboard({ archivo: itemSeleccionado, modo: 'copiar' });
+                  void registrarAccion("COPIAR", itemSeleccionado.name, `Archivo copiado al portapapeles`);
+                }
+              }}
+              title="Copiar (Ctrl+C)"
+              className={`p-1.5 rounded-lg border border-transparent transition-all ${
+                itemSeleccionado ? 'hover:border-zinc-800 hover:bg-zinc-900 text-zinc-300' : 'opacity-30 cursor-not-allowed text-zinc-600'
+              }`}
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              disabled={!clipboard}
+              onClick={pegarArchivo}
+              title="Pegar (Ctrl+V)"
+              className={`p-1.5 rounded-lg border border-transparent transition-all ${
+                clipboard ? 'hover:border-zinc-800 hover:bg-zinc-900 text-zinc-300' : 'opacity-30 cursor-not-allowed text-zinc-600'
+              }`}
+            >
+              <Clipboard className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              disabled={!itemSeleccionado}
+              onClick={() => {
+                if (itemSeleccionado) {
+                  setRenombrandoId(itemSeleccionado.id);
+                  setNombreRenombrado(itemSeleccionado.name);
+                }
+              }}
+              title="Renombrar (F2)"
+              className={`p-1.5 rounded-lg border border-transparent transition-all ${
+                itemSeleccionado ? 'hover:border-zinc-800 hover:bg-zinc-900 text-zinc-300' : 'opacity-30 cursor-not-allowed text-zinc-600'
+              }`}
+            >
+              <Type className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              disabled={!itemSeleccionado}
+              onClick={() => {
+                if (itemSeleccionado) {
+                  void eliminarArchivo(itemSeleccionado.id);
+                  setItemSeleccionado(null);
+                }
+              }}
+              title="Eliminar (Supr)"
+              className={`p-1.5 rounded-lg border border-transparent transition-all ${
+                itemSeleccionado ? 'hover:border-zinc-800 hover:bg-zinc-900 hover:text-red-400 text-zinc-300' : 'opacity-30 cursor-not-allowed text-zinc-600'
+              }`}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="w-px h-5 bg-zinc-800 mx-1" />
+
+            {/* 3. Dropdown de ORDENAR */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === 'ordenar' ? null : 'ordenar')}
+                className="px-3 py-1.5 rounded-lg border border-border/40 hover:border-primary/50 text-[9px] font-mono uppercase tracking-widest flex items-center gap-1.5 bg-background/40 hover:text-primary transition-all"
+              >
+                <SortAsc className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Ordenar</span>
+                <span className="text-[7px] opacity-60">▼</span>
+              </button>
+              {activeDropdown === 'ordenar' && (
+                <div className="absolute left-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5">
+                  {(['nombre', 'tamaño', 'fecha'] as const).map((crit) => (
+                    <button
+                      key={crit}
+                      onClick={() => { setOrdenarPor(crit); setActiveDropdown(null); }}
+                      className={`w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest hover:bg-zinc-900 rounded-lg flex justify-between ${ordenarPor === crit ? 'text-primary font-bold' : 'text-zinc-400'}`}
+                    >
+                      <span>Por {crit}</span>
+                      {ordenarPor === crit && <span>✓</span>}
+                    </button>
+                  ))}
+                  <div className="border-t border-zinc-800 my-1" />
+                  <button
+                    onClick={() => { setDireccionOrden(direccionOrden === 'asc' ? 'desc' : 'asc'); setActiveDropdown(null); }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg"
+                  >
+                    Dirección: {direccionOrden === 'asc' ? 'Descendente ↑' : 'Ascendente ↓'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 4. Dropdown de VER */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === 'ver' ? null : 'ver')}
+                className="px-3 py-1.5 rounded-lg border border-border/40 hover:border-primary/50 text-[9px] font-mono uppercase tracking-widest flex items-center gap-1.5 bg-background/40 hover:text-primary transition-all"
+              >
+                <Eye className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Ver</span>
+                <span className="text-[7px] opacity-60">▼</span>
+              </button>
+              {activeDropdown === 'ver' && (
+                <div className="absolute left-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5">
+                  <button
+                    onClick={() => { setFiltroTipo('todos'); setActiveDropdown(null); }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg"
+                  >
+                    Todos los archivos
+                  </button>
+                  <button
+                    onClick={() => { setFiltroTipo('carpetas'); setActiveDropdown(null); }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg"
+                  >
+                    Solo Carpetas
+                  </button>
+                  <button
+                    onClick={() => { setFiltroTipo('texto'); setActiveDropdown(null); }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg"
+                  >
+                    Solo Documentos
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="w-px h-5 bg-zinc-800 mx-1" />
+
+            {/* 5. Dropdown de MÁS OPCIONES (...) */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === 'mas' ? null : 'mas')}
+                className="p-1.5 rounded-lg border border-border/40 hover:border-primary/50 text-[9px] font-mono uppercase tracking-widest flex items-center bg-background/40 hover:text-primary transition-all"
+                title="Más opciones"
+              >
+                <span className="font-bold text-xs tracking-tighter">•••</span>
+              </button>
+              {activeDropdown === 'mas' && (
+                <div className="absolute right-0 mt-1.5 w-48 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5">
+                  <button
+                    onClick={() => { setMostrarControlesBusqueda(!mostrarControlesBusqueda); setActiveDropdown(null); }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
+                  >
+                    <Search className="w-3.5 h-3.5" />
+                    <span>Buscar</span>
+                  </button>
+                  <button
+                    disabled={!itemSeleccionado}
+                    onClick={() => {
+                      if (itemSeleccionado) {
+                        setArchivoParaTags(itemSeleccionado);
+                        setModalTagsAbierto(true);
+                      }
+                      setActiveDropdown(null);
+                    }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2 disabled:opacity-30 disabled:pointer-events-none"
+                  >
+                    <Tag className="w-3.5 h-3.5" />
+                    <span>Etiquetar</span>
+                  </button>
+                  <button
+                    disabled={!itemSeleccionado}
+                    onClick={() => {
+                      if (itemSeleccionado) {
+                        setArchivoMover(itemSeleccionado);
+                        setModalMoverAbierto(true);
+                      }
+                      setActiveDropdown(null);
+                    }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2 disabled:opacity-30 disabled:pointer-events-none"
+                  >
+                    <Move className="w-3.5 h-3.5" />
+                    <span>Mover archivo</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEstaSincronizando(true);
+                      setTimeout(() => setEstaSincronizando(false), 2000);
+                      if (modoNube) {
+                        void crearRecursosBaseNube();
+                      }
+                      void registrarAccion("SINCRONIZAR", "Sistema", modoNube ? 'Sincronización de nube iniciada.' : t("Sincronización con el ecosistema iniciada"));
+                      setActiveDropdown(null);
+                    }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
+                  >
+                    <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Sincronizar</span>
+                  </button>
+                  {modoNube && (
+                    <>
+                      <button
+                        onClick={() => { setModalCephAbierto(true); setActiveDropdown(null); }}
+                        className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
+                      >
+                        <Cpu className="w-3.5 h-3.5 text-sky-400" />
+                        <span>Monitor Ceph</span>
+                      </button>
+                      <button
+                        onClick={() => { setMostrarImportadorPc(!mostrarImportadorPc); setActiveDropdown(null); }}
+                        className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
+                      >
+                        <Download className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Importar PC</span>
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={() => { setMostrarHistorial(!mostrarHistorial); setActiveDropdown(null); }}
+                    className="w-full text-left px-3 py-2 text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg flex items-center gap-2"
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Historial</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Paneles de controles desplegables */}
@@ -1731,8 +1986,15 @@ export default function FileManager({
                 <div 
                   key={i} 
                   onClick={async () => {
+                    // Si no está seleccionado, seleccionarlo primero
+                    if (!itemSeleccionado || itemSeleccionado.id !== archivo.id) {
+                      setItemSeleccionado(archivo);
+                      return;
+                    }
+                    // Si ya está seleccionado, ejecutar la acción de apertura
                     if (archivo.isFolder) {
                       setSubcarpetaActiva(archivo.id);
+                      setItemSeleccionado(null); // Limpiar selección
                       return;
                     }
                     const ext = archivo.name.split('.').pop()?.toLowerCase();
@@ -1752,7 +2014,11 @@ export default function FileManager({
                       }
                     }
                   }}
-                  className={`flex items-center justify-between p-2 hover:bg-muted/50 transition-colors border border-transparent hover:border-border/50 cursor-pointer group rounded-lg ${
+                  className={`flex items-center justify-between p-2 hover:bg-muted/50 transition-colors border cursor-pointer group rounded-lg ${
+                    itemSeleccionado?.id === archivo.id 
+                      ? 'bg-primary/10 border-primary/40 shadow-sm shadow-primary/5' 
+                      : 'border-transparent hover:border-border/50'
+                  } ${
                     clipboard?.archivo?.id === archivo.id && clipboard?.modo === 'cortar' ? 'opacity-50 border-dashed border-primary/50' : ''
                   }`}
                 >
