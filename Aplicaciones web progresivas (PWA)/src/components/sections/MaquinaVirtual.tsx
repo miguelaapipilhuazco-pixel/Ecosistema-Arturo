@@ -1,121 +1,121 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { 
   Terminal, 
-  Play, 
-  Cpu, 
-  Server, 
+  Monitor, 
+  Bot, 
   Globe, 
   Smartphone, 
   Glasses, 
-  Monitor, 
-  Apple, 
-  Bot, 
-  Code 
+  X, 
+  Maximize2, 
+  Minimize2, 
+  Folder 
 } from 'lucide-react';
+import ChatOllama from './ChatOllama';
 
 const OllamaLogo = () => (
-  <img src="https://cdn.simpleicons.org/ollama" className="w-3.5 h-3.5 shrink-0 inline-block align-middle mr-1.5" alt="Ollama" />
+  <img src="https://cdn.simpleicons.org/ollama/FFFFFF" className="w-4 h-4 shrink-0" alt="Ollama" />
 );
 const BraveLogo = () => (
-  <img src="https://cdn.simpleicons.org/brave/FB542B" className="w-3.5 h-3.5 shrink-0 inline-block align-middle mr-1.5" alt="Brave" />
+  <img src="https://cdn.simpleicons.org/brave/FB542B" className="w-4 h-4 shrink-0" alt="Brave" />
 );
 const VSCodeLogo = () => (
-  <img src="https://cdn.simpleicons.org/visualstudiocode/007ACC" className="w-3.5 h-3.5 shrink-0 inline-block align-middle mr-1.5" alt="VS Code" />
+  <img src="https://cdn.simpleicons.org/visualstudiocode/007ACC" className="w-4 h-4 shrink-0" alt="VS Code" />
 );
 const AntigravityLogo = () => (
-  <img src="https://cdn.simpleicons.org/googlegemini/8E78FF" className="w-3.5 h-3.5 shrink-0 inline-block align-middle mr-1.5" alt="Antigravity" />
+  <img src="https://cdn.simpleicons.org/googlegemini/8E78FF" className="w-4 h-4 shrink-0" alt="Antigravity" />
 );
+
+interface Ventana {
+  id: string;
+  titulo: string;
+  alias: string;
+  url?: string;
+  logo: React.ComponentType<any> | (() => React.JSX.Element);
+  x: number;
+  y: number;
+  ancho: number;
+  alto: number;
+  minimizada: boolean;
+  maximizada: boolean;
+  esChat?: boolean;
+  agent?: 'ollama' | 'antigravity';
+}
 
 export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => void; appActiva: any | null }) {
   const { t } = useTranslation();
+  const [ventanas, setVentanas] = useState<Ventana[]>([]);
+  const [zIndices, setZIndices] = useState<string[]>([]);
   const [faseSimulacion, setFaseSimulacion] = useState<'booting' | 'terminal'>('booting');
   const [logsSimulados, setLogsSimulados] = useState<string[]>([]);
   const [cmdInput, setCmdInput] = useState('');
   const terminalEndRef = useRef<HTMLDivElement>(null);
+  
+  // Dragging states
+  const [dragWindowId, setDragWindowId] = useState<string | null>(null);
+  const dragStartOffset = useRef({ x: 0, y: 0 });
 
-  // Lista de Aplicaciones Integradas en la VM Universal
-  const aplicacionesDisponibles = [
+  // Lista de Aplicaciones del Dock
+  const aplicacionesDock = [
+    {
+      alias: 'terminal',
+      title: 'Terminal KVM',
+      logo: Terminal,
+      os: ['linux'],
+      launchType: 'terminal'
+    },
     {
       alias: 'brave',
       title: 'Brave Browser',
-      desc: 'Navegador Web Seguro e Inteligente',
       logo: BraveLogo,
-      deviceIcon: Monitor,
-      os: ['windows', 'linux', 'macos', 'android'],
-      launchType: 'web',
       url: 'https://search.brave.com',
-      runtimeType: 'app'
-    },
-    {
-      alias: 'ollama',
-      title: 'Ollama Local',
-      desc: 'Motor de IA de código abierto',
-      logo: OllamaLogo,
-      deviceIcon: Bot,
-      os: ['windows', 'linux', 'macos', 'android'],
-      launchType: 'chat',
-      runtimeType: 'program'
+      launchType: 'web'
     },
     {
       alias: 'vscode',
       title: 'VS Code',
-      desc: 'Editor de código premium de escritorio',
       logo: VSCodeLogo,
-      deviceIcon: Monitor,
-      os: ['windows', 'linux', 'macos'],
-      launchType: 'web',
       url: 'https://github1s.com',
-      runtimeType: 'program'
+      launchType: 'web'
     },
     {
       alias: 'antigravity',
       title: 'Antigravity AI',
-      desc: 'Asistente cognitivo avanzado de desarrollo',
       logo: AntigravityLogo,
-      deviceIcon: Bot,
-      os: ['windows', 'linux', 'macos', 'android'],
-      launchType: 'chat',
-      runtimeType: 'program'
+      esChat: true,
+      agent: 'antigravity' as const,
+      launchType: 'chat'
+    },
+    {
+      alias: 'ollama',
+      title: 'Ollama Local',
+      logo: OllamaLogo,
+      esChat: true,
+      agent: 'ollama' as const,
+      launchType: 'chat'
     },
     {
       alias: 'wolvic',
       title: 'Wolvic VR',
-      desc: 'Navegador para realidad virtual',
       logo: Globe,
-      deviceIcon: Glasses,
-      os: ['android'],
-      launchType: 'web',
       url: 'https://wolvic.com',
-      runtimeType: 'app'
+      launchType: 'web'
     },
     {
       alias: 'playstore',
-      title: 'Google Play Store',
-      desc: 'Tienda de aplicaciones Android',
+      title: 'Play Store',
       logo: Smartphone,
-      deviceIcon: Smartphone,
-      os: ['android'],
-      launchType: 'web',
       url: 'https://play.google.com/store',
-      runtimeType: 'app'
-    },
-    {
-      alias: 'appstore',
-      title: 'Apple App Store',
-      desc: 'Tienda de apps para iOS y macOS',
-      logo: Smartphone,
-      deviceIcon: Smartphone,
-      os: ['ios', 'macos'],
-      launchType: 'web',
-      url: 'https://www.apple.com/app-store/',
-      runtimeType: 'app'
+      launchType: 'web'
     }
   ];
 
-  // Auto-boot sequence al montar
+  // Iniciar con la Terminal de QEMU abierta y bootéando
   useEffect(() => {
+    abrirVentana('terminal');
+    
     const runBoot = async () => {
       setFaseSimulacion('booting');
       setLogsSimulados([]);
@@ -137,7 +137,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
       ];
 
       for (let i = 0; i < bootSequence.length; i++) {
-        await new Promise(r => setTimeout(r, i === 0 ? 50 : 200));
+        await new Promise(r => setTimeout(r, i === 0 ? 50 : 180));
         setLogsSimulados(prev => [...prev, `[system] ${bootSequence[i]}`]);
       }
       setFaseSimulacion('terminal');
@@ -150,6 +150,81 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
       terminalEndRef.current.scrollTop = terminalEndRef.current.scrollHeight;
     }
   }, [logsSimulados, faseSimulacion]);
+
+  const abrirVentana = (alias: string) => {
+    // Si ya está abierta, traer al frente
+    if (ventanas.some(v => v.alias === alias)) {
+      setZIndices(prev => [alias, ...prev.filter(id => id !== alias)]);
+      setVentanas(prev => prev.map(v => v.alias === alias ? { ...v, minimizada: false } : v));
+      return;
+    }
+
+    // Buscar los metadatos en la lista del dock
+    const meta = aplicacionesDock.find(a => a.alias === alias);
+    if (!meta) return;
+
+    // Crear coordenadas de cascada sencillas para no encimarlas por completo
+    const compensacion = (ventanas.length * 25) % 150;
+
+    const nuevaVentana: Ventana = {
+      id: alias,
+      alias: alias,
+      titulo: meta.title,
+      logo: meta.logo,
+      url: meta.url,
+      x: 80 + compensacion,
+      y: 60 + compensacion,
+      ancho: alias === 'terminal' ? 550 : 700,
+      alto: alias === 'terminal' ? 380 : 500,
+      minimizada: false,
+      maximizada: false,
+      esChat: meta.esChat,
+      agent: meta.agent
+    };
+
+    setVentanas(prev => [...prev, nuevaVentana]);
+    setZIndices(prev => [alias, ...prev]);
+  };
+
+  const cerrarVentana = (id: string) => {
+    setVentanas(prev => prev.filter(v => v.id !== id));
+    setZIndices(prev => prev.filter(item => item !== id));
+  };
+
+  const alternarMaximizada = (id: string) => {
+    setVentanas(prev => prev.map(v => v.id === id ? { ...v, maximizada: !v.maximizada } : v));
+  };
+
+  const traerAlFrente = (id: string) => {
+    setZIndices(prev => [id, ...prev.filter(item => item !== id)]);
+  };
+
+  // Drag handlers
+  const handleHeaderMouseDown = (id: string, e: React.MouseEvent) => {
+    const win = ventanas.find(v => v.id === id);
+    if (!win || win.maximizada) return;
+    
+    traerAlFrente(id);
+    setDragWindowId(id);
+    dragStartOffset.current = {
+      x: e.clientX - win.x,
+      y: e.clientY - win.y
+    };
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragWindowId) return;
+    
+    const posX = e.clientX - dragStartOffset.current.x;
+    const posY = e.clientY - dragStartOffset.current.y;
+
+    setVentanas(prev => prev.map(v => v.id === dragWindowId ? { ...v, x: Math.max(0, posX), y: Math.max(0, posY) } : v));
+  };
+
+  const handleMouseUp = () => {
+    setDragWindowId(null);
+  };
 
   const ejecutarComandoTerminal = () => {
     const cmdClean = cmdInput.trim();
@@ -175,19 +250,18 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
         case 'list':
           res = "Ecosystem Application Binary List:\n" + 
                 "-----------------------------------------------------------------\n" +
-                aplicacionesDisponibles.map(app => `  [${app.alias}] - ${app.title} (${app.desc}) [OS: ${app.os.join(', ')}]`).join('\n') +
+                aplicacionesDock.filter(a => a.alias !== 'terminal').map(app => `  [${app.alias}] - ${app.title} [OS: linux/container]`).join('\n') +
                 "\n-----------------------------------------------------------------\n" +
-                "Use 'run <app_alias>' to launch the software container.";
+                "Use 'run <app_alias>' or click the dock icon to launch.";
           break;
         case 'run':
           if (!arg) {
             res = "Error: Please specify an application alias to run. Example: 'run brave'";
           } else {
-            const appEncontrada = aplicacionesDisponibles.find(a => a.alias === arg);
+            const appEncontrada = aplicacionesDock.find(a => a.alias === arg);
             if (appEncontrada) {
               res = `Launching container for [${appEncontrada.title}] in background mode... OK.`;
-              // Ejecutar la aplicación real en el navegador
-              onLaunch(appEncontrada);
+              abrirVentana(arg);
             } else {
               res = `Error: application alias '${arg}' not found. Type 'apps' to see the list.`;
             }
@@ -239,55 +313,152 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] lg:h-[calc(100vh-60px)] bg-black border border-border rounded-2xl overflow-hidden font-mono select-text shadow-2xl relative">
-      {/* Header de la Terminal */}
-      <div className="flex items-center justify-between p-3.5 bg-zinc-900 border-b border-zinc-800 text-zinc-400 select-none">
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500/80" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-            <div className="w-3 h-3 rounded-full bg-green-500/80" />
-          </div>
-          <span className="text-[9px] uppercase tracking-widest text-zinc-200 font-bold flex items-center gap-1.5">
-            <Terminal className="w-3.5 h-3.5 text-primary" />
-            Universal OS Core (QEMU / KVM Open Source Host)
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-[8px] bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded-full">
-          <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-          ONLINE
+    <div 
+      className="relative w-full h-[calc(100vh-140px)] lg:h-[calc(100vh-60px)] rounded-2xl overflow-hidden bg-cover bg-center select-none shadow-2xl border border-border/50"
+      style={{ 
+        backgroundImage: 'radial-gradient(circle at center, #18181b 0%, #09090b 100%)',
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+    >
+      {/* 1. Fondo decorativo tipo malla futurista */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+
+      {/* 2. Monitor de Carga del Sistema (Info en Desktop) */}
+      <div className="absolute top-6 left-6 font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 space-y-1 pointer-events-none">
+        <div>System: Ecosystem Universal Host (QEMU-KVM)</div>
+        <div>Uptime: 100% stable / Virtualization ON</div>
+        <div className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          Core Status: Active
         </div>
       </div>
 
-      {/* Salida de Logs / Consola */}
-      <div className="flex-1 p-6 overflow-y-auto space-y-2.5 text-[10px] sm:text-xs text-zinc-300 leading-relaxed scrollbar-thin scrollbar-thumb-zinc-850" ref={terminalEndRef}>
-        {logsSimulados.map((log, i) => (
-          <div key={i} className="whitespace-pre-wrap text-left">{log}</div>
-        ))}
-        
-        {faseSimulacion === 'booting' && (
-          <div className="flex items-center gap-2 text-zinc-500">
-            <span className="w-2.5 h-2.5 rounded-full border border-t-transparent border-zinc-500 animate-spin" />
-            <span>Cargando recursos del hypervisor...</span>
-          </div>
-        )}
+      {/* 3. Renderizar las Ventanas Flotantes */}
+      <div className="absolute inset-0 p-4 pb-24 overflow-hidden">
+        {ventanas.map((win) => {
+          const LogoComp = win.logo;
+          const indexProp = zIndices.indexOf(win.id);
+          const zIndex = indexProp === -1 ? 10 : (100 - indexProp);
+
+          return (
+            <div
+              key={win.id}
+              onClick={() => traerAlFrente(win.id)}
+              style={{
+                top: win.maximizada ? 0 : win.y,
+                left: win.maximizada ? 0 : win.x,
+                width: win.maximizada ? '100%' : win.ancho,
+                height: win.maximizada ? 'calc(100% - 80px)' : win.alto,
+                zIndex: zIndex
+              }}
+              className={`absolute flex flex-col rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950/95 backdrop-blur-xl shadow-2xl transition-all duration-100 ${dragWindowId === win.id ? 'cursor-grabbing border-primary/50' : 'cursor-default'}`}
+            >
+              {/* Barra de Título de la Ventana */}
+              <div
+                onMouseDown={(e) => handleHeaderMouseDown(win.id, e)}
+                className="flex items-center justify-between px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-zinc-400 select-none cursor-grab"
+              >
+                <div className="flex items-center gap-2">
+                  <LogoComp className="w-3.5 h-3.5" />
+                  <span className="text-[9px] uppercase tracking-widest font-mono font-bold text-zinc-200">{win.titulo}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); alternarMaximizada(win.id); }}
+                    className="p-1 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-all"
+                  >
+                    <Maximize2 className="w-3 h-3" />
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); cerrarVentana(win.id); }}
+                    className="p-1 hover:text-red-500 hover:bg-red-500/10 rounded transition-all"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Contenido de la Ventana */}
+              <div className="flex-1 w-full relative overflow-hidden bg-black">
+                {win.alias === 'terminal' ? (
+                  <div className="w-full h-full flex flex-col font-mono text-left text-[10px] sm:text-xs">
+                    {/* Consola */}
+                    <div className="flex-1 p-4 overflow-y-auto space-y-2 text-zinc-300 select-text" ref={terminalEndRef}>
+                      {logsSimulados.map((log, i) => (
+                        <div key={i} className="whitespace-pre-wrap">{log}</div>
+                      ))}
+                      {faseSimulacion === 'booting' && (
+                        <div className="flex items-center gap-2 text-zinc-500">
+                          <span className="w-2.5 h-2.5 rounded-full border border-t-transparent border-zinc-500 animate-spin" />
+                          <span>Cargando recursos del hypervisor...</span>
+                        </div>
+                      )}
+                    </div>
+                    {/* Input */}
+                    {faseSimulacion === 'terminal' && (
+                      <div className="p-3 bg-zinc-900 border-t border-zinc-800 flex items-center gap-2 select-none">
+                        <span className="text-primary font-bold">guest@ecosystem-qemu:~$</span>
+                        <input 
+                          type="text"
+                          value={cmdInput}
+                          onChange={(e) => setCmdInput(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && ejecutarComandoTerminal()}
+                          className="flex-1 bg-transparent border-none outline-none text-zinc-100 font-mono caret-primary focus:ring-0 p-0 text-[10px] sm:text-xs"
+                          placeholder="Type 'apps' or 'run <app_alias>'..."
+                          autoFocus
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : win.esChat ? (
+                  <div className="w-full h-full text-left bg-zinc-950 relative">
+                    <ChatOllama onExit={() => cerrarVentana(win.id)} agent={win.agent} />
+                  </div>
+                ) : (
+                  <iframe
+                    src={win.url}
+                    className="w-full h-full border-none bg-white"
+                    title={win.titulo}
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  />
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Entrada de Comandos */}
-      {faseSimulacion === 'terminal' && (
-        <div className="p-4 bg-zinc-900 border-t border-zinc-800 flex items-center gap-3 select-none">
-          <span className="text-primary text-[10px] sm:text-xs font-bold">guest@ecosystem-qemu:~$</span>
-          <input 
-            type="text"
-            value={cmdInput}
-            onChange={(e) => setCmdInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && ejecutarComandoTerminal()}
-            className="flex-1 bg-transparent border-none outline-none text-zinc-100 text-[10px] sm:text-xs font-mono caret-primary focus:ring-0 p-0"
-            placeholder="Type 'apps' to list software, or 'run <app_alias>' to execute..."
-            autoFocus
-          />
+      {/* 4. Dock Inferior de Aplicaciones (Efecto Glassmorphism) */}
+      <div className="absolute bottom-4 inset-x-0 flex justify-center z-[999999] pointer-events-none">
+        <div className="flex items-center gap-3 px-4 py-2.5 bg-zinc-900/60 dark:bg-black/50 backdrop-blur-2xl border border-zinc-800/80 rounded-2xl pointer-events-auto shadow-2xl select-none">
+          {aplicacionesDock.map((app) => {
+            const AppLogo = app.logo;
+            const activa = ventanas.some(v => v.alias === app.alias);
+
+            return (
+              <button
+                key={app.alias}
+                onClick={() => abrirVentana(app.alias)}
+                title={`Iniciar ${app.title}`}
+                className={`group relative p-3 rounded-xl border transition-all flex items-center justify-center ${activa ? 'bg-primary/20 border-primary text-primary shadow-[0_0_15px_var(--glow)] scale-110' : 'bg-zinc-800/40 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 hover:scale-105'}`}
+              >
+                <AppLogo className="w-5 h-5 shrink-0" />
+                
+                {/* Indicador de aplicación activa */}
+                {activa && (
+                  <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary" />
+                )}
+
+                {/* Tooltip flotante */}
+                <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-all font-mono text-[8px] tracking-wider bg-zinc-950 border border-zinc-850 px-2 py-1 rounded text-zinc-300 uppercase whitespace-nowrap">
+                  {app.title}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }
