@@ -1071,6 +1071,17 @@ export default function FileManager({
           ...juegosNube.map((item) => ({ ...item, __kind: 'game' })),
           ...archivos.map((item) => ({ ...item, __kind: 'file' })),
         ];
+
+        // Restringir accesos para usuarios invitados
+        const esAdmin = usuarioActual?.email === 'miguela.apipilhuazco@gmail.com';
+        if (!esAdmin) {
+          itemsRaw = itemsRaw.filter(item => {
+            const name = String(item.name || '').toLowerCase();
+            return !name.includes('vs code') && 
+                   !name.includes('visual studio code') && 
+                   !name.includes('antigravity');
+          });
+        }
       } else if (carpetaActiva === 'favoritos') {
         itemsRaw = archivos.filter((item) => item.isFavorite).map((item) => ({ ...item, __kind: 'file' }));
       } else {
