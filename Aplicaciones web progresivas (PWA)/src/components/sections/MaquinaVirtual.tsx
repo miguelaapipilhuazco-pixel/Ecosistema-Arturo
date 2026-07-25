@@ -69,7 +69,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
       alias: 'brave',
       title: 'Brave Browser',
       logo: Globe,
-      url: 'https://search.brave.com',
+      url: 'https://html.duckduckgo.com',
       categoria: 'Internet',
       launchType: 'web'
     },
