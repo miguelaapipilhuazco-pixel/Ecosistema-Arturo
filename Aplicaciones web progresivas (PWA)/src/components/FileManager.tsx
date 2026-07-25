@@ -130,6 +130,12 @@ export default function FileManager({
   const selectorManualCarpetaRef = useRef<HTMLInputElement>(null);
   const modoNube = idContexto === 'nube';
 
+  const tamañoOcupadoReal = useMemo(() => {
+    return archivos
+      .filter(f => !f.isFolder)
+      .reduce((sum, f) => sum + (Number(f.size) || 0), 0);
+  }, [archivos]);
+
   useEffect(() => {
     setNombreEquipoReal(getSyncDeviceDisplayName());
   }, []);
@@ -1510,10 +1516,13 @@ export default function FileManager({
                     </h5>
                     {/* Barra de progreso de espacio */}
                     <div className="w-full bg-zinc-800 h-2 rounded-full mt-2 overflow-hidden border border-zinc-900">
-                      <div className="bg-sky-500 h-full w-[0.01%]" />
+                      <div 
+                        className="bg-sky-500 h-full transition-all duration-500" 
+                        style={{ width: `${Math.min(100, Math.max(0.5, (tamañoOcupadoReal / (1024 * 1024 * 1024)) * 10))}%` }} 
+                      />
                     </div>
                     <p className="font-mono text-[7px] text-muted-foreground uppercase tracking-widest mt-1.5">
-                      142 GB ocupados de 1.00 EB
+                      {formatearTamaño(tamañoOcupadoReal)} ocupados de 1.00 EB
                     </p>
                   </div>
                 </button>
