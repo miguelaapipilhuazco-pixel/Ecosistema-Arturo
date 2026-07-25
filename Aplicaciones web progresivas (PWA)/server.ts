@@ -24,7 +24,7 @@ interface LocalDeviceItem {
 
 interface RuntimeVmItem {
   name: string;
-  provider: "hyperv" | "virtualbox" | "vmware" | "generic";
+  provider: "hyperv" | "virtualbox" | "vmware" | "qemu" | "generic";
   path?: string;
   state?: string;
   source: "scan" | "hyperv-command";
@@ -761,7 +761,7 @@ async function walkVmFiles(rootDir: string, maxDepth: number, out: RuntimeVmItem
     }
 
     const ext = path.extname(entry.name).toLowerCase();
-    if (![".vmx", ".vbox", ".vmcx", ".vhdx"].includes(ext)) {
+    if (![".vmx", ".vbox", ".vmcx", ".vhdx", ".qcow2", ".img"].includes(ext)) {
       continue;
     }
 
@@ -771,6 +771,8 @@ async function walkVmFiles(rootDir: string, maxDepth: number, out: RuntimeVmItem
       ext === ".vmx" ? "vmware" :
       ext === ".vmcx" ? "hyperv" :
       ext === ".vhdx" ? "hyperv" :
+      ext === ".qcow2" ? "qemu" :
+      ext === ".img" ? "qemu" :
       "generic";
 
     out.push({
@@ -1255,17 +1257,47 @@ async function startServer() {
 
   app.post("/api/runtime/start-vm", (req, res) => {
     const name = String(req.body?.name || "").trim();
+    const provider = String(req.body?.provider || "").trim();
+    const pathDisk = String(req.body?.path || "").trim();
+
     if (!name) {
       res.status(400).json({ ok: false, error: "name es requerido" });
       return;
     }
 
-    if (process.platform !== "win32") {
-      res.status(400).json({ ok: false, error: "Inicio de VM implementado para Windows en esta version" });
-      return;
-    }
-
     try {
+      if (provider === "qemu") {
+        const isWin = process.platform === "win32";
+        const qemuBin = isWin ? "C:\\Program Files\\qemu\\qemu-system-x86_64.exe" : "qemu-system-x86_64";
+        
+        const args = [
+          "-m", "2048",
+          "-smp", "2",
+          "-drive", `file=${pathDisk},format=qcow2`,
+          "-net", "nic,model=virtio",
+          "-net", "user"
+        ];
+        
+        if (!isWin) {
+          args.push("-enable-kvm");
+        } else {
+          args.push("-accel", "whpx");
+        }
+
+        spawn(qemuBin, args, {
+          detached: true,
+          stdio: "ignore"
+        }).unref();
+
+        res.json({ ok: true, started: true, name, provider: "qemu" });
+        return;
+      }
+
+      if (process.platform !== "win32") {
+        res.status(400).json({ ok: false, error: "Inicio de VM nativa no-QEMU sólo implementado para Windows" });
+        return;
+      }
+
       const escaped = name.replace(/'/g, "''");
       const command = `Start-VM -Name '${escaped}'`;
       spawn("powershell.exe", ["-NoProfile", "-Command", command], {
@@ -1274,7 +1306,7 @@ async function startServer() {
         windowsHide: true,
       }).unref();
 
-      res.json({ ok: true, started: true, name });
+      res.json({ ok: true, started: true, name, provider: "hyperv" });
     } catch (error: any) {
       res.status(500).json({ ok: false, error: error?.message || "No se pudo iniciar la maquina virtual" });
     }
