@@ -105,15 +105,7 @@ export default function Aplicacion() {
       case 'sistema': return <Sistema alNavegar={setSeccionActiva} />;
       case 'compartidos': return <Compartidos alNavegar={setSeccionActiva} />;
       case 'estadisticas': return <Estadisticas alNavegar={setSeccionActiva} />;
-      case 'maquina-virtual':
-      case 'vm-terminal':
-      case 'vm-brave':
-      case 'vm-vscode':
-      case 'vm-antigravity':
-      case 'vm-ollama':
-      case 'vm-wolvic':
-      case 'vm-playstore':
-        return <MaquinaVirtual onLaunch={setAplicacionIniciada} appActiva={aplicacionIniciada} seccionNavegacion={seccionActiva} />;
+      case 'maquina-virtual': return <MaquinaVirtual onLaunch={setAplicacionIniciada} appActiva={aplicacionIniciada} />;
       case 'admin-center': {
         const userEmail = localStorage.getItem('ecosystem_current_user') || '';
         const isOwner = esCorreoPropietario(userEmail);
@@ -146,7 +138,7 @@ export default function Aplicacion() {
       <ActiveAppContainer 
         app={aplicacionIniciada} 
         onExit={() => setAplicacionIniciada(null)} 
-        visible={(seccionActiva === 'maquina-virtual' || seccionActiva.startsWith('vm-')) && aplicacionIniciada !== null}
+        visible={seccionActiva === 'maquina-virtual' && aplicacionIniciada !== null}
       />
     </Diseño>
   );

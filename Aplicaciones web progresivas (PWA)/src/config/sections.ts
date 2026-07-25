@@ -35,14 +35,7 @@ import type { Seccion } from '../types';
 export const SECTIONS: Seccion[] = [
   { id: 'espacios', titulo: 'Carpetas', icono: 'Folder', descripcion: 'Contextos y proyectos', barraLateral: true },
   { id: 'inicio', titulo: 'Inicio', icono: 'Home', descripcion: 'Panel principal', barraLateral: true },
-  { id: 'maquina-virtual', titulo: 'RUNTIME', icono: 'Play', descripcion: 'Motor de compatibilidad universal', barraLateral: false },
-  { id: 'vm-terminal', titulo: 'Terminal KVM', icono: 'Terminal', descripcion: 'Consola de la VM', barraLateral: true },
-  { id: 'vm-brave', titulo: 'Brave Browser', icono: 'Globe', descripcion: 'Navegador Web', barraLateral: true },
-  { id: 'vm-vscode', titulo: 'VS Code', icono: 'Code', descripcion: 'Editor de código', barraLateral: true },
-  { id: 'vm-antigravity', titulo: 'Antigravity AI', icono: 'Bot', descripcion: 'Asistente de IA', barraLateral: true },
-  { id: 'vm-ollama', titulo: 'Ollama Local', icono: 'Cpu', descripcion: 'Motor local IA', barraLateral: true },
-  { id: 'vm-wolvic', titulo: 'Wolvic VR', icono: 'Box', descripcion: 'Realidad virtual', barraLateral: true },
-  { id: 'vm-playstore', titulo: 'Play Store', icono: 'Smartphone', descripcion: 'Google Play', barraLateral: true },
+  { id: 'maquina-virtual', titulo: 'Entorno', icono: 'Monitor', descripcion: 'Motor de compatibilidad universal', barraLateral: true },
 
   { id: 'buscar', titulo: 'Buscar', icono: 'Search', descripcion: 'Busqueda inteligente', barraLateral: false },
   { id: 'sincronizacion', titulo: 'Sincronizacion', icono: 'RefreshCw', descripcion: 'ENLACE PROYECTO', barraLateral: false },
