@@ -166,7 +166,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
       let res = '';
       switch (cmd) {
         case 'help':
-          res = "Available commands:\n  help            - Show this documentation\n  apps or list    - List all executable apps\n  run <app_alias> - Launch an application (e.g., run brave, run antigravity)\n  neofetch        - Display system hardware specifications\n  status          - Check virtual CPU/RAM performance\n  clear           - Reset terminal screen";
+          res = "Available commands:\n  help            - Show this documentation\n  apps or list    - List all executable apps\n  run <app_alias> - Launch an application (e.g., run brave, run antigravity)\n  neofetch        - Display system hardware specifications\n  status          - Check virtual CPU/RAM performance\n  tech            - Explain architecture (tech 1, tech 2, tech 3)\n  clear           - Reset terminal screen";
           break;
         case 'clear':
           setLogsSimulados([]);
@@ -195,6 +195,38 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
           break;
         case 'status':
           res = "System health check:\n  CPU usage: 8% (Emulated 4x Intel Xeon)\n  RAM usage: 1420MB / 4096MB (34% allocated)\n  IP Address: 192.168.100.15 (bridged adapter virbr0)\n  Status: RUNNING STABLE";
+          break;
+        case 'tech':
+          if (!arg) {
+            res = "Virtualization & Compatibility Architecture Info:\n" +
+                  "-----------------------------------------------------------------\n" +
+                  "  [1] QEMU (Universal Architecture Hypervisor)\n" +
+                  "  [2] Docker + Waydroid / Anbox (Containerization Subsystem)\n" +
+                  "  [3] WebAssembly (Browser-Native VM)\n" +
+                  "-----------------------------------------------------------------\n" +
+                  "Type 'tech 1', 'tech 2' or 'tech 3' to view details.";
+          } else if (arg === '1') {
+            res = "1. QEMU (Hipervisor Universal de Arquitectura)\n" +
+                  "-----------------------------------------------------------------\n" +
+                  "  * Qué es: Es un emulador e hipervisor de código abierto y multiplataforma.\n" +
+                  "  * Por qué es 'Universal': A diferencia de VirtualBox, QEMU puede emular arquitecturas de procesador totalmente diferentes.\n" +
+                  "  * Cómo funciona: Permite emular procesadores ARM (celulares Android/iOS) y x86 (Windows/Linux) al mismo tiempo en tu laptop de Windows.";
+          } else if (arg === '2') {
+            res = "2. Docker + Waydroid / Anbox (Virtualización por Contenedores)\n" +
+                  "-----------------------------------------------------------------\n" +
+                  "  * Qué es: Simula únicamente las capas de software necesarias en vez de una máquina virtual pesada.\n" +
+                  "  * Cómo funciona:\n" +
+                  "    - Corre un núcleo Linux base súper ligero.\n" +
+                  "    - Waydroid ejecuta apps de Android de forma nativa compartiendo el hardware.\n" +
+                  "    - Contenedores Docker corren apps de Windows y Linux aisladas.";
+          } else if (arg === '3') {
+            res = "3. WebAssembly (WASM) - La Máquina Virtual del Navegador\n" +
+                  "-----------------------------------------------------------------\n" +
+                  "  * Qué es: Tecnología web para compilar código (C++, Rust, Go) a velocidad nativa en el navegador.\n" +
+                  "  * Cómo funciona: Actúa como una máquina virtual integrada en el navegador. Permite que programas de escritorio complejos corran en la web sin instalar emuladores.";
+          } else {
+            res = "Invalid index. Type 'tech' to see available topics.";
+          }
           break;
         case 'neofetch':
           res = `               .---.                 guest@ecosystem-qemu\n              /     \\                --------------------\n              \\_.._/                 OS: Ecosystem Universal Core v2.5 [Open Source]\n              /  .  \\                Host: QEMU Emulated Machine (x86_64)\n             /\\  .  /\\               Kernel: Linux KVM 6.6.15-ecosystem-universal\n            /_ \\___/ _\\              Uptime: 2 mins\n           (  /     \\  )             Packages: 421 (dpkg)\n            \\_\\_   _/_/              Shell: bash 5.2.15\n              \\_\\_/_/                Terminal: emulated-pts/0\n                                     CPU: QEMU Virtual CPU (4 Cores)\n                                     Memory: 1420MB / 4096MB`;
