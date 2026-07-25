@@ -18,14 +18,14 @@ import {
   Folder,
   Code,
   Sparkles,
-  Cpu
+  Cpu,
+  Settings,
+  Keyboard,
+  Clipboard,
+  Tv
 } from 'lucide-react';
 import ChatOllama from './ChatOllama';
 
-const OllamaLogo = Cpu;
-const BraveLogo = Globe;
-const VSCodeLogo = Code;
-const AntigravityLogo = Sparkles;
 const Win11Logo = () => (
   <svg viewBox="0 0 88 88" className="w-4 h-4 shrink-0 fill-[#0078d4]" alt="Ecosistema Inicio">
     <path d="M0 0h41.6v41.6H0zM46.4 0H88v41.6H46.4zM0 46.4h41.6V88H0zM46.4 46.4H88V88H46.4z" />
@@ -46,29 +46,11 @@ interface Ventana {
   maximizada: boolean;
   esChat?: boolean;
   agent?: 'ollama' | 'antigravity';
+  esNoVnc?: boolean;
 }
 
 export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => void; appActiva: any | null }) {
   const { t } = useTranslation();
-  const [ventanas, setVentanas] = useState<Ventana[]>([
-    {
-      id: 'terminal',
-      alias: 'terminal',
-      titulo: 'Terminal KVM',
-      logo: Terminal,
-      x: 80,
-      y: 60,
-      ancho: 550,
-      alto: 380,
-      minimizada: false,
-      maximizada: false
-    }
-  ]);
-  const [zIndices, setZIndices] = useState<string[]>(['terminal']);
-  const [faseSimulacion, setFaseSimulacion] = useState<'booting' | 'terminal'>('booting');
-  const [logsSimulados, setLogsSimulados] = useState<string[]>([]);
-  const [cmdInput, setCmdInput] = useState('');
-  const terminalEndRef = useRef<HTMLDivElement>(null);
   
   // Reloj en tiempo real para el Taskbar
   const [horaFecha, setHoraFecha] = useState({ hora: '', fecha: '' });
@@ -89,21 +71,21 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
     {
       alias: 'brave',
       title: 'Brave Browser',
-      logo: BraveLogo,
+      logo: Globe,
       url: 'https://search.brave.com',
       launchType: 'web'
     },
     {
       alias: 'vscode',
       title: 'VS Code',
-      logo: VSCodeLogo,
+      logo: Code,
       url: 'https://github1s.com',
       launchType: 'web'
     },
     {
       alias: 'antigravity',
       title: 'Antigravity AI',
-      logo: AntigravityLogo,
+      logo: Sparkles,
       esChat: true,
       agent: 'antigravity' as const,
       launchType: 'chat'
@@ -111,7 +93,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
     {
       alias: 'ollama',
       title: 'Ollama Local',
-      logo: OllamaLogo,
+      logo: Cpu,
       esChat: true,
       agent: 'ollama' as const,
       launchType: 'chat'
@@ -129,12 +111,43 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
       logo: Smartphone,
       url: 'https://play.google.com/store',
       launchType: 'web'
+    },
+    {
+      alias: 'novnc',
+      title: 'Conexión noVNC',
+      logo: Tv,
+      esNoVnc: true,
+      launchType: 'novnc'
     }
   ];
 
+  // Iniciar con la Terminal de QEMU abierta y bootéando por defecto
+  const [ventanas, setVentanas] = useState<Ventana[]>([
+    {
+      id: 'terminal',
+      alias: 'terminal',
+      titulo: 'Terminal KVM',
+      logo: Terminal,
+      x: 80,
+      y: 60,
+      ancho: 550,
+      alto: 380,
+      minimizada: false,
+      maximizada: false
+    }
+  ]);
+  const [zIndices, setZIndices] = useState<string[]>(['terminal']);
+  const [faseSimulacion, setFaseSimulacion] = useState<'booting' | 'terminal'>('booting');
+  const [logsSimulados, setLogsSimulados] = useState<string[]>([]);
+  const [cmdInput, setCmdInput] = useState('');
+  const terminalEndRef = useRef<HTMLDivElement>(null);
   const bootIniciado = useRef(false);
 
-  // Iniciar con la Terminal de QEMU abierta y bootéando
+  // Estados de la simulación interactiva de noVNC
+  const [novncMenuOpen, setNovncMenuOpen] = useState(true);
+  const [novncConnected, setNovncConnected] = useState(true);
+  const [novncLogText, setNovncLogText] = useState('Connecting to ws://localhost:3005/vnc-proxy... Connected.');
+
   useEffect(() => {
     if (bootIniciado.current) return;
     bootIniciado.current = true;
@@ -189,14 +202,12 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
   }, [logsSimulados, faseSimulacion]);
 
   const abrirVentana = (alias: string) => {
-    // Si ya está abierta, traer al frente
     if (ventanas.some(v => v.alias === alias)) {
       setZIndices(prev => [alias, ...prev.filter(id => id !== alias)]);
       setVentanas(prev => prev.map(v => v.alias === alias ? { ...v, minimizada: false } : v));
       return;
     }
 
-    // Buscar los metadatos en la lista del dock
     const meta = aplicacionesDock.find(a => a.alias === alias);
     if (!meta) return;
 
@@ -210,12 +221,13 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
       url: meta.url,
       x: 80 + compensacion,
       y: 60 + compensacion,
-      ancho: alias === 'terminal' ? 550 : 700,
-      alto: alias === 'terminal' ? 380 : 500,
+      ancho: alias === 'terminal' ? 550 : alias === 'novnc' ? 800 : 700,
+      alto: alias === 'terminal' ? 380 : alias === 'novnc' ? 500 : 500,
       minimizada: false,
       maximizada: false,
       esChat: meta.esChat,
-      agent: meta.agent
+      agent: meta.agent,
+      esNoVnc: meta.esNoVnc
     };
 
     setVentanas(prev => [...prev, nuevaVentana]);
@@ -357,10 +369,10 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
     >
-      {/* 1. Fondo decorativo tipo malla futurista */}
+      {/* 1. Fondo decorativo tipo malla */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
-      {/* 2. Monitor de Carga del Sistema (Info en Desktop) */}
+      {/* 2. Monitor de Carga */}
       <div className="absolute top-6 left-6 font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 space-y-1 pointer-events-none">
         <div>System: Ecosystem Universal Host (QEMU-KVM)</div>
         <div>Uptime: 100% stable / Virtualization ON</div>
@@ -370,7 +382,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
         </div>
       </div>
 
-      {/* 3. Renderizar las Ventanas Flotantes */}
+      {/* 3. Ventanas Flotantes */}
       <div className="absolute inset-0 p-4 pb-20 overflow-hidden">
         {ventanas.map((win) => {
           const LogoComp = win.logo;
@@ -390,7 +402,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
               }}
               className={`absolute flex flex-col rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950/95 backdrop-blur-xl shadow-2xl transition-all duration-100 ${dragWindowId === win.id ? 'cursor-grabbing border-primary/50' : 'cursor-default'}`}
             >
-              {/* Barra de Título de la Ventana */}
+              {/* Barra de Título */}
               <div
                 onMouseDown={(e) => handleHeaderMouseDown(win.id, e)}
                 className="flex items-center justify-between px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-zinc-400 select-none cursor-grab"
@@ -415,11 +427,10 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
                 </div>
               </div>
 
-              {/* Contenido de la Ventana */}
-              <div className="flex-1 w-full relative overflow-hidden bg-black">
+              {/* Contenido */}
+              <div className="flex-1 w-full relative overflow-hidden bg-black flex flex-row">
                 {win.alias === 'terminal' ? (
                   <div className="w-full h-full flex flex-col font-mono text-left text-[10px] sm:text-xs">
-                    {/* Consola */}
                     <div className="flex-1 p-4 overflow-y-auto space-y-2 text-zinc-300 select-text" ref={terminalEndRef}>
                       {logsSimulados.map((log, i) => (
                         <div key={i} className="whitespace-pre-wrap">{log}</div>
@@ -431,7 +442,6 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
                         </div>
                       )}
                     </div>
-                    {/* Input */}
                     {faseSimulacion === 'terminal' && (
                       <div className="p-3 bg-zinc-900 border-t border-zinc-800 flex items-center gap-2 select-none">
                         <span className="text-primary font-bold">guest@ecosystem-qemu:~$</span>
@@ -451,6 +461,80 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
                   <div className="w-full h-full text-left bg-zinc-950 relative">
                     <ChatOllama onExit={() => cerrarVentana(win.id)} agent={win.agent} />
                   </div>
+                ) : win.esNoVnc ? (
+                  // INTERFAZ DE SIMULACIÓN DE CLIENTE noVNC
+                  <div className="w-full h-full flex flex-col bg-zinc-900 font-sans text-left text-xs select-none">
+                    {/* noVNC Control Bar (Top) */}
+                    <div className="h-9 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-3 text-zinc-300">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-400 font-bold">noVNC CONNECTED</span>
+                        <span className="text-zinc-500 font-mono text-[8px] pl-2">ws://localhost:3005/vnc-proxy</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[9px] text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800 font-mono">1920x1080 (32-bit)</span>
+                        <button 
+                          onClick={() => {
+                            setNovncConnected(!novncConnected);
+                            setNovncLogText(novncConnected ? 'Disconnected by user.' : 'Reconnecting... Connected.');
+                          }} 
+                          className={`px-2 py-0.5 rounded font-mono text-[9px] uppercase transition-all ${novncConnected ? 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/35' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/35'}`}
+                        >
+                          {novncConnected ? 'Disconnect' : 'Connect'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 flex flex-row relative overflow-hidden">
+                      {/* noVNC Left Action Menu */}
+                      <div className={`h-full bg-zinc-950 border-r border-zinc-800 transition-all duration-250 flex flex-col items-center py-4 gap-4 ${novncMenuOpen ? 'w-10' : 'w-0 overflow-hidden border-none'}`}>
+                        <button title="Settings" className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded transition-all"><Settings className="w-4 h-4" /></button>
+                        <button title="Show Keyboard" className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded transition-all"><Keyboard className="w-4 h-4" /></button>
+                        <button title="Clipboard" className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded transition-all"><Clipboard className="w-4 h-4" /></button>
+                        <button title="Viewport Settings" className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded transition-all"><Monitor className="w-4 h-4" /></button>
+                      </div>
+
+                      {/* noVNC Toggle Button */}
+                      <button 
+                        onClick={() => setNovncMenuOpen(!novncMenuOpen)}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-10 bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 border-l-none rounded-r-lg flex items-center justify-center text-zinc-500 hover:text-zinc-300 z-50 transition-all"
+                      >
+                        <span className="text-[8px] font-bold">{novncMenuOpen ? '‹' : '›'}</span>
+                      </button>
+
+                      {/* noVNC VNC Canvas (Interactive Desktop inside the VNC Viewer) */}
+                      <div className="flex-1 bg-zinc-950 relative overflow-hidden flex flex-col items-center justify-center p-4">
+                        {novncConnected ? (
+                          <div 
+                            className="w-full max-w-2xl aspect-video bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl relative overflow-hidden flex flex-col"
+                            style={{ backgroundImage: 'radial-gradient(circle at center, #27272a 0%, #09090b 100%)' }}
+                          >
+                            {/* Simulador de Escritorio Linux de la VM */}
+                            <div className="p-4 flex-1 text-zinc-300 font-mono text-[10px] space-y-2 select-text">
+                              <div className="text-emerald-400 font-bold">Ecosystem OS Core (KVM Terminal Emulator active)</div>
+                              <div>Kernel: Linux KVM 6.6.15-ecosystem-universal</div>
+                              <div>Host Architecture: x86_64 emulated via QEMU</div>
+                              <div className="pt-4 border-t border-zinc-800 mt-4 text-zinc-400">
+                                This VNC desktop is transmitted in real-time to your PWA via secure HTML5 Canvas.
+                              </div>
+                            </div>
+                            
+                            {/* Barra de estado inferior de la VM simulada */}
+                            <div className="h-6 bg-zinc-950 border-t border-zinc-850 px-3 flex items-center justify-between text-zinc-500 text-[8px] font-mono select-none">
+                              <span>user@qemu-kvm-guest:~$</span>
+                              <span>CPU: 4.2% | RAM: 1.4 GB / 4.0 GB</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-zinc-500 font-mono text-center space-y-2">
+                            <Tv className="w-12 h-12 mx-auto text-zinc-600 mb-2" />
+                            <div className="text-sm font-semibold">VNC Connection Closed</div>
+                            <div className="text-[10px]">{novncLogText}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <iframe
                     src={win.url}
@@ -465,10 +549,10 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
         })}
       </div>
 
-      {/* 4. BARRA DE TAREAS ESTILO WINDOWS 11 (Taskbar de borde a borde abajo) */}
+      {/* 4. BARRA DE TAREAS ESTILO WINDOWS 11 */}
       <div className="absolute bottom-0 inset-x-0 h-14 bg-zinc-950/75 dark:bg-black/60 backdrop-blur-3xl border-t border-zinc-800/80 flex items-center justify-between px-6 z-[999999] select-none">
         
-        {/* LADO IZQUIERDO: Botón de Inicio (Logo Windows 11) */}
+        {/* LADO IZQUIERDO */}
         <div className="flex items-center gap-4 shrink-0 w-24">
           <button 
             onClick={() => abrirVentana('terminal')}
@@ -479,7 +563,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
           </button>
         </div>
 
-        {/* CENTRO: Aplicaciones de la barra (Iconos alineados en el centro) */}
+        {/* CENTRO */}
         <div className="flex items-center gap-1.5 py-1">
           {aplicacionesDock.map((app) => {
             const AppLogo = app.logo;
@@ -494,14 +578,12 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
               >
                 <AppLogo className="w-5 h-5 shrink-0" />
                 
-                {/* Indicador de aplicación activa (Línea azul inferior estilo Windows 11) */}
                 {activa ? (
                   <span className="absolute bottom-0.5 w-4 h-0.5 rounded bg-sky-400" />
                 ) : (
                   <span className="absolute bottom-0.5 w-1 h-0.5 rounded bg-zinc-500 scale-0 group-hover:scale-100 transition-transform" />
                 )}
 
-                {/* Tooltip flotante */}
                 <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-all font-mono text-[8px] tracking-wider bg-zinc-950 border border-zinc-850 px-2 py-1 rounded text-zinc-300 uppercase whitespace-nowrap shadow-xl">
                   {app.title}
                 </span>
@@ -510,7 +592,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
           })}
         </div>
 
-        {/* LADO DERECHO: System Tray (Wifi, Volumen, Batería, Reloj y Fecha) */}
+        {/* LADO DERECHO */}
         <div className="flex items-center gap-3 shrink-0 text-zinc-400 text-right font-mono text-[10px] w-24 justify-end">
           <div className="flex items-center gap-2 pr-1 opacity-70">
             <Wifi className="w-3.5 h-3.5" />
