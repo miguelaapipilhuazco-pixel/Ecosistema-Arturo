@@ -349,7 +349,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
 
   return (
     <div 
-      className="fixed inset-x-0 bottom-20 top-14 lg:bottom-0 lg:top-0 lg:left-64 lg:right-0 z-45 overflow-hidden bg-cover bg-center select-none"
+      className="w-full h-full relative overflow-hidden bg-cover bg-center select-none flex flex-col"
       style={{ 
         backgroundImage: 'radial-gradient(circle at center, #1c1c1f 0%, #0c0c0e 100%)',
       }}

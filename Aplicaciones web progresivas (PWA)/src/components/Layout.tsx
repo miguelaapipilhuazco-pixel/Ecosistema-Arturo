@@ -318,6 +318,8 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
     );
   }
 
+  const esVM = seccionActiva === 'maquina-virtual';
+
   return (
     <div className={`h-[100dvh] bg-background text-foreground flex flex-row overflow-hidden font-sans selection:bg-primary/30 selection:text-primary relative ${!modoColor ? 'grayscale' : ''}`}>
       
@@ -473,10 +475,9 @@ export default function Diseño({ children, seccionActiva, alNavegar, alternarTe
         </AnimatePresence>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 md:px-10 lg:px-12 lg:py-12 scroll-smooth relative hide-scrollbar">
-          <div className="max-w-7xl mx-auto w-full relative z-10">
+        <main className={`flex-1 overflow-hidden relative hide-scrollbar ${esVM ? 'p-0' : 'px-4 py-6 sm:px-6 md:px-10 lg:px-12 lg:py-12 scroll-smooth'}`}>
+          <div className={`${esVM ? 'w-full h-full' : 'max-w-7xl mx-auto w-full'} relative z-10`}>
             {children}
-
           </div>
         </main>
 
