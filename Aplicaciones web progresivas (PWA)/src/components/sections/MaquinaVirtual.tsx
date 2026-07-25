@@ -15,22 +15,17 @@ import {
   Volume2, 
   Battery, 
   Search, 
-  Folder 
+  Folder,
+  Code,
+  Sparkles,
+  Cpu
 } from 'lucide-react';
 import ChatOllama from './ChatOllama';
 
-const OllamaLogo = () => (
-  <img src="https://cdn.simpleicons.org/ollama/FFFFFF" className="w-4 h-4 shrink-0" alt="Ollama" />
-);
-const BraveLogo = () => (
-  <img src="https://cdn.simpleicons.org/brave/FB542B" className="w-4 h-4 shrink-0" alt="Brave" />
-);
-const VSCodeLogo = () => (
-  <img src="https://cdn.simpleicons.org/visualstudiocode/007ACC" className="w-4 h-4 shrink-0" alt="VS Code" />
-);
-const AntigravityLogo = () => (
-  <img src="https://cdn.simpleicons.org/googlegemini/8E78FF" className="w-4 h-4 shrink-0" alt="Antigravity" />
-);
+const OllamaLogo = Cpu;
+const BraveLogo = Globe;
+const VSCodeLogo = Code;
+const AntigravityLogo = Sparkles;
 const Win11Logo = () => (
   <svg viewBox="0 0 88 88" className="w-4 h-4 shrink-0 fill-[#0078d4]" alt="Ecosistema Inicio">
     <path d="M0 0h41.6v41.6H0zM46.4 0H88v41.6H46.4zM0 46.4h41.6V88H0zM46.4 46.4H88V88H46.4z" />
