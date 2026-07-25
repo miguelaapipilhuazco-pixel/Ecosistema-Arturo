@@ -500,8 +500,9 @@ export default function Inicio({ onNavigate }: PropiedadesInicio) {
   };
 
   const obtenerCapacidadMaximaCuenta = () => {
-    const guardado = Number(localStorage.getItem('arturo_account_capacity_tb') || '1024');
-    const capacidadTB = Number.isFinite(guardado) && guardado > 0 ? guardado : 1024;
+    const guardado = Number(localStorage.getItem('arturo_account_capacity_tb') || '1048576');
+    const capacidadTB = Number.isFinite(guardado) && guardado > 0 ? guardado : 1048576;
+    if (capacidadTB >= 1048576) return '1 EB';
     if (capacidadTB >= 1024) return '1 PB';
     return `${capacidadTB.toFixed(0)} TB`;
   };
