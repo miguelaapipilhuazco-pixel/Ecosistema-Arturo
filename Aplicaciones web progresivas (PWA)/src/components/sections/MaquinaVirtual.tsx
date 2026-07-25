@@ -11,6 +11,10 @@ import {
   X, 
   Maximize2, 
   Minimize2, 
+  Wifi, 
+  Volume2, 
+  Battery, 
+  Search, 
   Folder 
 } from 'lucide-react';
 import ChatOllama from './ChatOllama';
@@ -26,6 +30,11 @@ const VSCodeLogo = () => (
 );
 const AntigravityLogo = () => (
   <img src="https://cdn.simpleicons.org/googlegemini/8E78FF" className="w-4 h-4 shrink-0" alt="Antigravity" />
+);
+const Win11Logo = () => (
+  <svg viewBox="0 0 88 88" className="w-4 h-4 shrink-0 fill-[#0078d4]" alt="Ecosistema Inicio">
+    <path d="M0 0h41.6v41.6H0zM46.4 0H88v41.6H46.4zM0 46.4h41.6V88H0zM46.4 46.4H88V88H46.4z" />
+  </svg>
 );
 
 interface Ventana {
@@ -53,6 +62,9 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
   const [cmdInput, setCmdInput] = useState('');
   const terminalEndRef = useRef<HTMLDivElement>(null);
   
+  // Reloj en tiempo real para el Taskbar
+  const [horaFecha, setHoraFecha] = useState({ hora: '', fecha: '' });
+
   // Dragging states
   const [dragWindowId, setDragWindowId] = useState<string | null>(null);
   const dragStartOffset = useRef({ x: 0, y: 0 });
@@ -145,6 +157,20 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
     void runBoot();
   }, []);
 
+  // Loop del reloj de Windows 11
+  useEffect(() => {
+    const actualizarReloj = () => {
+      const ahora = new Date();
+      setHoraFecha({
+        hora: ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+        fecha: ahora.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' })
+      });
+    };
+    actualizarReloj();
+    const intervalId = setInterval(actualizarReloj, 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   useEffect(() => {
     if (terminalEndRef.current) {
       terminalEndRef.current.scrollTop = terminalEndRef.current.scrollHeight;
@@ -163,7 +189,6 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
     const meta = aplicacionesDock.find(a => a.alias === alias);
     if (!meta) return;
 
-    // Crear coordenadas de cascada sencillas para no encimarlas por completo
     const compensacion = (ventanas.length * 25) % 150;
 
     const nuevaVentana: Ventana = {
@@ -316,13 +341,13 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
     <div 
       className="fixed inset-x-0 bottom-20 top-14 lg:bottom-0 lg:top-0 lg:left-64 lg:right-0 z-45 overflow-hidden bg-cover bg-center select-none"
       style={{ 
-        backgroundImage: 'radial-gradient(circle at center, #18181b 0%, #09090b 100%)',
+        backgroundImage: 'radial-gradient(circle at center, #1c1c1f 0%, #0c0c0e 100%)',
       }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
     >
       {/* 1. Fondo decorativo tipo malla futurista */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
       {/* 2. Monitor de Carga del Sistema (Info en Desktop) */}
       <div className="absolute top-6 left-6 font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 space-y-1 pointer-events-none">
@@ -335,7 +360,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
       </div>
 
       {/* 3. Renderizar las Ventanas Flotantes */}
-      <div className="absolute inset-0 p-4 pb-24 overflow-hidden">
+      <div className="absolute inset-0 p-4 pb-20 overflow-hidden">
         {ventanas.map((win) => {
           const LogoComp = win.logo;
           const indexProp = zIndices.indexOf(win.id);
@@ -349,7 +374,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
                 top: win.maximizada ? 0 : win.y,
                 left: win.maximizada ? 0 : win.x,
                 width: win.maximizada ? '100%' : win.ancho,
-                height: win.maximizada ? 'calc(100% - 80px)' : win.alto,
+                height: win.maximizada ? 'calc(100% - 56px)' : win.alto,
                 zIndex: zIndex
               }}
               className={`absolute flex flex-col rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950/95 backdrop-blur-xl shadow-2xl transition-all duration-100 ${dragWindowId === win.id ? 'cursor-grabbing border-primary/50' : 'cursor-default'}`}
@@ -429,9 +454,22 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
         })}
       </div>
 
-      {/* 4. Dock Inferior de Aplicaciones (Efecto Glassmorphism) */}
-      <div className="absolute bottom-4 inset-x-0 flex justify-center z-[999999] pointer-events-none">
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-zinc-900/60 dark:bg-black/50 backdrop-blur-2xl border border-zinc-800/80 rounded-2xl pointer-events-auto shadow-2xl select-none">
+      {/* 4. BARRA DE TAREAS ESTILO WINDOWS 11 (Taskbar de borde a borde abajo) */}
+      <div className="absolute bottom-0 inset-x-0 h-14 bg-zinc-950/75 dark:bg-black/60 backdrop-blur-3xl border-t border-zinc-800/80 flex items-center justify-between px-6 z-[999999] select-none">
+        
+        {/* LADO IZQUIERDO: Botón de Inicio (Logo Windows 11) */}
+        <div className="flex items-center gap-4 shrink-0 w-24">
+          <button 
+            onClick={() => abrirVentana('terminal')}
+            title="Inicio de Sistema"
+            className="p-2 hover:bg-zinc-800/60 rounded-lg transition-all active:scale-95 flex items-center justify-center"
+          >
+            <Win11Logo />
+          </button>
+        </div>
+
+        {/* CENTRO: Aplicaciones de la barra (Iconos alineados en el centro) */}
+        <div className="flex items-center gap-1.5 py-1">
           {aplicacionesDock.map((app) => {
             const AppLogo = app.logo;
             const activa = ventanas.some(v => v.alias === app.alias);
@@ -441,22 +479,37 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
                 key={app.alias}
                 onClick={() => abrirVentana(app.alias)}
                 title={`Iniciar ${app.title}`}
-                className={`group relative p-3 rounded-xl border transition-all flex items-center justify-center ${activa ? 'bg-primary/20 border-primary text-primary shadow-[0_0_15px_var(--glow)] scale-110' : 'bg-zinc-800/40 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 hover:scale-105'}`}
+                className={`group relative p-2.5 rounded-lg transition-all flex items-center justify-center hover:bg-zinc-800/50 ${activa ? 'scale-105' : 'hover:scale-105'}`}
               >
                 <AppLogo className="w-5 h-5 shrink-0" />
                 
-                {/* Indicador de aplicación activa */}
-                {activa && (
-                  <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary" />
+                {/* Indicador de aplicación activa (Línea azul inferior estilo Windows 11) */}
+                {activa ? (
+                  <span className="absolute bottom-0.5 w-4 h-0.5 rounded bg-sky-400" />
+                ) : (
+                  <span className="absolute bottom-0.5 w-1 h-0.5 rounded bg-zinc-500 scale-0 group-hover:scale-100 transition-transform" />
                 )}
 
                 {/* Tooltip flotante */}
-                <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-all font-mono text-[8px] tracking-wider bg-zinc-950 border border-zinc-850 px-2 py-1 rounded text-zinc-300 uppercase whitespace-nowrap">
+                <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-all font-mono text-[8px] tracking-wider bg-zinc-950 border border-zinc-850 px-2 py-1 rounded text-zinc-300 uppercase whitespace-nowrap shadow-xl">
                   {app.title}
                 </span>
               </button>
             );
           })}
+        </div>
+
+        {/* LADO DERECHO: System Tray (Wifi, Volumen, Batería, Reloj y Fecha) */}
+        <div className="flex items-center gap-3 shrink-0 text-zinc-400 text-right font-mono text-[10px] w-24 justify-end">
+          <div className="flex items-center gap-2 pr-1 opacity-70">
+            <Wifi className="w-3.5 h-3.5" />
+            <Volume2 className="w-3.5 h-3.5" />
+            <Battery className="w-3.5 h-3.5" />
+          </div>
+          <div className="flex flex-col items-end leading-tight text-[9px] border-l border-zinc-800/80 pl-2">
+            <span className="text-zinc-200 font-semibold">{horaFecha.hora}</span>
+            <span className="text-zinc-500 text-[8px] mt-0.5">{horaFecha.fecha}</span>
+          </div>
         </div>
       </div>
     </div>
