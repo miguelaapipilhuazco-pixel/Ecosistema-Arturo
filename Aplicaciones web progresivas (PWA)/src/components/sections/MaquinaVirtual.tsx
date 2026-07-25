@@ -121,18 +121,18 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
       setLogsSimulados([]);
       
       const bootSequence = [
-        "Initializing QEMU emulator v8.2.0...",
+        "Initializing QEMU open-source emulator v8.2.0...",
         "Virtual CPU: 4 Cores (x86_64 Emulated Host)",
         "Virtual RAM: 4096 MB allocation successful",
         "Mounting host storage over virtfs...",
-        "Booting Linux kernel 6.6.15-ecosystem-universal...",
+        "Booting Linux KVM kernel 6.6.15-ecosystem-universal...",
         "Loading systemd initial RAM disk...",
         "Mounting overlay root filesystem [OK]",
         "Starting D-Bus message bus system [OK]",
         "Starting Docker Daemon container socket [OK]",
         "Waydroid service subsystem initialized [OK]",
         "Bridging virtual ethernet adapter (virbr0)...",
-        "Ecosystem Universal OS Core v2.5.0-AR ready.",
+        "Ecosystem Universal OS Core [Open Source] v2.5.0-AR ready.",
         "Type 'help' or 'apps' to explore, and 'run <app_alias>' to execute."
       ];
 
@@ -197,7 +197,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
           res = "System health check:\n  CPU usage: 8% (Emulated 4x Intel Xeon)\n  RAM usage: 1420MB / 4096MB (34% allocated)\n  IP Address: 192.168.100.15 (bridged adapter virbr0)\n  Status: RUNNING STABLE";
           break;
         case 'neofetch':
-          res = `               .---.                 guest@ecosystem-qemu\n              /     \\                --------------------\n              \\_.._/                 OS: Ecosystem Universal Core v2.5\n              /  .  \\                Host: QEMU Emulated Machine (x86_64)\n             /\\  .  /\\               Kernel: Linux 6.6.15-ecosystem-universal\n            /_ \\___/ _\\              Uptime: 2 mins\n           (  /     \\  )             Packages: 421 (dpkg)\n            \\_\\_   _/_/              Shell: bash 5.2.15\n              \\_\\_/_/                Terminal: emulated-pts/0\n                                     CPU: QEMU Virtual CPU (4 Cores)\n                                     Memory: 1420MB / 4096MB`;
+          res = `               .---.                 guest@ecosystem-qemu\n              /     \\                --------------------\n              \\_.._/                 OS: Ecosystem Universal Core v2.5 [Open Source]\n              /  .  \\                Host: QEMU Emulated Machine (x86_64)\n             /\\  .  /\\               Kernel: Linux KVM 6.6.15-ecosystem-universal\n            /_ \\___/ _\\              Uptime: 2 mins\n           (  /     \\  )             Packages: 421 (dpkg)\n            \\_\\_   _/_/              Shell: bash 5.2.15\n              \\_\\_/_/                Terminal: emulated-pts/0\n                                     CPU: QEMU Virtual CPU (4 Cores)\n                                     Memory: 1420MB / 4096MB`;
           break;
         default:
           res = `bash: command not found: ${cmd}. Type 'help' for available commands.`;
@@ -218,7 +218,7 @@ export default function MaquinaVirtual({ onLaunch }: { onLaunch: (app: any) => v
           </div>
           <span className="text-[9px] uppercase tracking-widest text-zinc-200 font-bold flex items-center gap-1.5">
             <Terminal className="w-3.5 h-3.5 text-primary" />
-            Universal OS Core (QEMU / Docker Host)
+            Universal OS Core (QEMU / KVM Open Source Host)
           </span>
         </div>
         <div className="flex items-center gap-2 text-[8px] bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded-full">
