@@ -126,7 +126,7 @@ services:
       - arturo-net
 
   kafka:
-    image: bitnami/kafka:3.9
+    image: soldevelo/kafka:3.9
     container_name: arturo-kafka
     environment:
       KAFKA_CFG_NODE_ID: 1
